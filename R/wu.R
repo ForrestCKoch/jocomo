@@ -1,7 +1,7 @@
 #' @rdname wu.test
 #' @method wu.test default
 #' @exportS3Method jocomo::wu.test default
-wu.test.default <- function(x, y, models, subjects...){
+wu.test.default <- function(x, y, models, subjects, ...){
   # J <- dim(x)[2]
   # X_EM <- wu.statistic(x=x, y=y)
   # p.value <- stats::pchisq(X_EM, df=2*(J-1), lower.tail=F)
@@ -30,9 +30,9 @@ wu.test.default <- function(x, y, models, subjects...){
     DNAME <- paste(DNAME, ", ", deparse(substitute(models)),
                    " and ", deparse(substitute(subjects)), sep = "")
     # Make sure we have complete data
-    if (any(c(table(models, subject)) == 0L))
+    if (any(c(table(models, subjects)) == 0L))
       stop("There must be exactly one prediction from each model for each subject.  At least one is missing")
-    if (any(c(table(models, subject)) > 1L))
+    if (any(c(table(models, subjects)) > 1L))
       stop("There must be exactly one prediction from each model for each subject.  At least one is duplicated")
 
     models <- factor(models)
