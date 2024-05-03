@@ -7,11 +7,11 @@ wu.test.default <- function(x, y, models, subjects...){
   # p.value <- stats::pchisq(X_EM, df=2*(J-1), lower.tail=F)
   # list(statistic=X_EM, p.value=p.value)
 
-  # The following code is essentially coppied and reworked from stats::friedman.test
+  # The following code is essentially copied and reworked from stats::friedman.test
 
-  DNAME <- paste0(deparse(substitute(x), " and ", deparse(substitute(y))))
+  DNAME <- paste0(deparse(substitute(x)), " and ", deparse(substitute(y)))
 
-  # If x is a matrix then we dont need to do much
+  # If x is a matrix then we don't need to do much
   if (is.matrix(x)) {
     models <- factor(c(col(x)))
     subjects <- factor(c(row(x)))
@@ -45,7 +45,7 @@ wu.test.default <- function(x, y, models, subjects...){
     models <- models[o]
     subjects <- subjects[o]
     k <- nlevels(models)
-    y <- matrix(unlist(split(c(y), blocks)), ncol = k, byrow = TRUE)
+    y <- matrix(unlist(split(c(y), subjects)), ncol = k, byrow = TRUE)
 
     # Make sure y is consistent for each subject
     if (any(apply(y, 1, diff, simplify = T) != 0L))
@@ -55,10 +55,10 @@ wu.test.default <- function(x, y, models, subjects...){
   }
 
   ## <FIXME split.matrix> -- From friedman.test??
-  x <- matrix(unlist(split(c(x), blocks)), ncol = k, byrow = TRUE)
-
-  y <- y[complete.cases(x)] # We only need the first column as it should not change
-  x <- x[complete.cases(x), ]
+  x <- matrix(unlist(split(c(x), subjects)), ncol = k, byrow = TRUE)
+  to.keep <- complete.cases(x) & complete.cases(y)
+  y <- y[to.keep] # We only need the first column as it should not change
+  x <- x[to.keep,]
   n <- nrow(x)
 
   STATISTIC <- wu.statistic(x = x, y = y)
@@ -162,8 +162,10 @@ wu.statistic <- function(x, y, correct=F){
   b <- diag(M10)-diag(M01)
   B <- M10+M01
 
-  t(a) %*% solve(A) %*% a +
-  t(b) %*% solve(B) %*% b
+  as.numeric(
+    t(a) %*% solve(A) %*% a +
+    t(b) %*% solve(B) %*% b
+  )
 }
 
 friedman.test.default <-
