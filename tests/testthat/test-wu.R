@@ -94,7 +94,7 @@ test_that("test wu.test.default: data is logical, x is vector, models and subjec
   expect_equal(wu.test.out$parameter, df)
   expect_equal(wu.test.out$p.value, pvalue)
   expect_equal(wu.test.out$method, method)
-  expect_equal(wu.test.out$data.name, 'x and y and models and subjects')
+  expect_equal(wu.test.out$data.name, 'x, y, models, and subjects')
 })
 
 test_that("test wu.test.default: data is logical, x is vector, models and subjects are characters",{
@@ -115,5 +115,5 @@ test_that("test wu.test.default: data is logical, x is vector, models and subjec
   expect_equal(wu.test.out$parameter, df)
   expect_equal(wu.test.out$p.value, pvalue)
   expect_equal(wu.test.out$method, method)
-  expect_equal(wu.test.out$data.name, 'x and y and models and subjects')
+  expect_equal(wu.test.out$data.name, 'x, y, models, and subjects')
 })

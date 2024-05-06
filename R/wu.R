@@ -9,7 +9,6 @@ wu.test.default <- function(x, y, models, subjects, ...){
 
   # The following code is essentially copied and reworked from stats::friedman.test
 
-  DNAME <- paste0(deparse(substitute(x)), " and ", deparse(substitute(y)))
 
   # If x is a matrix then we don't need to do much
   if (is.matrix(x)) {
@@ -19,6 +18,7 @@ wu.test.default <- function(x, y, models, subjects, ...){
       stop("Number of rows in x does not match length of y")
     }
     k <- nlevels(models)
+    DNAME <- paste0(deparse(substitute(x)), " and ", deparse(substitute(y)))
   }
   else {
     # Make sure none of the subject/model entries are NA
@@ -27,8 +27,8 @@ wu.test.default <- function(x, y, models, subjects, ...){
     # Make sure everything is the same length
     if (any(diff(c(length(y), length(models), length(subjects), length(x))) != 0L))
       stop("'x', 'y', 'models' and 'subjects' must have the same length")
-    DNAME <- paste(DNAME, ", ", deparse(substitute(models)),
-                   " and ", deparse(substitute(subjects)), sep = "")
+    DNAME <- paste(deparse(substitute(x)), ', ', deparse(substitute(y)), ', ', deparse(substitute(models)),
+                   ", and ", deparse(substitute(subjects)), sep = "")
     # Make sure we have complete data
     if (any(c(table(models, subjects)) == 0L))
       stop("There must be exactly one prediction from each model for each subject.  At least one is missing")
@@ -60,6 +60,14 @@ wu.test.default <- function(x, y, models, subjects, ...){
   y <- y[to.keep] # We only need the first column as it should not change
   x <- x[to.keep,]
   n <- nrow(x)
+
+  # Convert everything to factors
+  y <- factor(y, ordered=T)
+  if (nlevels(y) != 2L)
+    stop("'y' must have exactly 2 levels")
+  x <- structure(factor(x, levels = levels(y), ordered=T), dim=dim(x), class=c('matrix', 'ordered', 'factor'))
+  if (any(is.na(x)))
+    stop("'x' must have the same levels as 'y'")
 
   STATISTIC <- wu.statistic(x = x, y = y)
   PARAMETER <- 2*(dim(x)[2]-1)
@@ -113,13 +121,14 @@ wu.test <- function(x, ...){
 #' @param correct Add 0.5 to each cell of the 2x2 contingency table to adjust for 0 counts
 #' @export
 wu.statistic <- function(x, y, correct=F){
-  x.pred <- x
+  x <- structure(x==max(x), dim=dim(x), class=c('matrix', 'logical'))
+  y <- y==max(y)
 
   p <- dim(x)[1]
   q <- dim(x)[2]
 
-  x.pred.pos.cases <- x.pred[y,]
-  x.pred.neg.cases <- x.pred[!y,]
+  x.pred.pos.cases <- x[y,]
+  x.pred.neg.cases <- x[!y,]
 
   n.pos <- sum(y)
   n.neg <- sum(!y)
