@@ -16,9 +16,12 @@ get.test.data.1 <- function(){
   list(x=x, y=y, statistic=statistic, pvalue=pvalue, df=df, method="Wu's test")
 }
 
+####################
+# No Formula
+####################
 test_that("test wu.statistic: stable",{
   test.data <- get.test.data.1()
-  suppressMessages(attach(test.data))
+  suppressMessages(attach(test.data, warn.conflicts = FALSE))
   stat.out <- wu.statistic(x, y)
   names(stat.out) <- c("Wu chi-squared")
   expect_equal(stat.out, statistic)
@@ -26,8 +29,25 @@ test_that("test wu.statistic: stable",{
 
 test_that("test wu.test.default: data is logical, x is matrix",{
   test.data <- get.test.data.1()
-  suppressMessages(attach(test.data))
+  suppressMessages(attach(test.data, warn.conflicts = FALSE))
 
+  wu.test.out <- wu.test.default(x, y)
+
+  #expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, method)
+  expect_equal(wu.test.out$data.name, 'x and y')
+})
+
+test_that("test wu.test.default: data is logical, x is data.frame",{
+  test.data <- get.test.data.1()
+  suppressMessages(attach(test.data, warn.conflicts = FALSE))
+
+  x <- data.frame(x)
   wu.test.out <- wu.test.default(x, y)
 
   #expect_invisible(wu.test.default(x, y))
@@ -42,7 +62,7 @@ test_that("test wu.test.default: data is logical, x is matrix",{
 
 test_that("test wu.test.default: data is numeric, x is matrix",{
   test.data <- get.test.data.1()
-  suppressMessages(attach(test.data))
+  suppressMessages(attach(test.data, warn.conflicts = FALSE))
   x <- matrix(as.numeric(c(x)), nrow=length(y))
   y <- as.numeric(y)
 
@@ -60,7 +80,7 @@ test_that("test wu.test.default: data is numeric, x is matrix",{
 
 test_that("test wu.test.default: data is character, x is matrix",{
   test.data <- get.test.data.1()
-  suppressMessages(attach(test.data))
+  suppressMessages(attach(test.data, warn.conflicts = FALSE))
   x <- matrix(as.character(c(x)), nrow=length(y))
   y <- as.character(y)
 
@@ -78,7 +98,7 @@ test_that("test wu.test.default: data is character, x is matrix",{
 
 test_that("test wu.test.default: data is character, x is matrix -- 2",{
   test.data <- get.test.data.1()
-  suppressMessages(attach(test.data))
+  suppressMessages(attach(test.data, warn.conflicts = FALSE))
   x <- matrix(LETTERS[as.numeric(c(x))+1], nrow=length(y))
   y <- LETTERS[as.numeric(c(y))+1]
 
@@ -96,7 +116,7 @@ test_that("test wu.test.default: data is character, x is matrix -- 2",{
 
 test_that("test wu.test.default: data is unordered factor, x is matrix",{
   test.data <- get.test.data.1()
-  suppressMessages(attach(test.data))
+  suppressMessages(attach(test.data, warn.conflicts = FALSE))
   x <- matrix(factor(LETTERS[as.numeric(c(x))+1]), nrow=length(y))
   y <- factor(LETTERS[as.numeric(c(y))+1])
 
@@ -114,7 +134,7 @@ test_that("test wu.test.default: data is unordered factor, x is matrix",{
 
 test_that("test wu.test.default: data is ordered factor, x is matrix",{
   test.data <- get.test.data.1()
-  suppressMessages(attach(test.data))
+  suppressMessages(attach(test.data, warn.conflicts = FALSE))
   x <- matrix(factor(LETTERS[as.numeric(c(x))+1], ordered=T), nrow=length(y))
   y <- factor(LETTERS[as.numeric(c(y))+1], ordered=T)
 
@@ -132,7 +152,7 @@ test_that("test wu.test.default: data is ordered factor, x is matrix",{
 
 test_that("test wu.test.default: data is logical, x is vector, models and subjects are factors",{
   test.data <- get.test.data.1()
-  suppressMessages(attach(test.data))
+  suppressMessages(attach(test.data, warn.conflicts = FALSE))
   models <- factor(col(x))
   subjects <- factor(row(x))
   y <- rep(y,dim(x)[2])
@@ -153,7 +173,7 @@ test_that("test wu.test.default: data is logical, x is vector, models and subjec
 
 test_that("test wu.test.default: data is logical, x is vector, models and subjects are characters",{
   test.data <- get.test.data.1()
-  suppressMessages(attach(test.data))
+  suppressMessages(attach(test.data, warn.conflicts = FALSE))
   models <- factor(col(x)) |> as.character()
   subjects <- factor(row(x)) |> as.character()
   y <- rep(y,dim(x)[2])
@@ -171,3 +191,123 @@ test_that("test wu.test.default: data is logical, x is vector, models and subjec
   expect_equal(wu.test.out$method, method)
   expect_equal(wu.test.out$data.name, 'x, y, models, and subjects')
 })
+
+#########################
+# Wide format formula
+#########################
+test_that("test wu.test.formula: wide format, data is logical, rhs is matrix",{
+  test.data <- get.test.data.1()
+
+  wu.test.out <- wu.test.formula(y~x, data=list(x=test.data$x, y=test.data$y))
+
+  #expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, method)
+  expect_equal(wu.test.out$data.name, 'y and x')
+})
+
+test_that("test wu.test.formula: logical, wu.test.formula(y~x)",{
+  test.data <- get.test.data.1()
+  suppressMessages(attach(test.data, warn.conflicts = FALSE))
+
+  wu.test.out <- wu.test.formula(y~x)
+
+  #expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, method)
+  expect_equal(wu.test.out$data.name, 'y and x')
+})
+
+test_that("test wu.test.formula: data is logical, wu.test.formula(y~x, data=test.df)",{
+  test.data <- get.test.data.1()
+
+  test.df <- data.frame(x = test.data$x, y = test.data$y)
+  wu.test.out <- wu.test.formula(y~x, data=test.df)
+
+  #expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, method)
+  expect_equal(wu.test.out$data.name, 'y and x')
+})
+
+test_that("test wu.test.formula: data is logical, wu.test.formula(y~., data=test.df)",{
+  test.data <- get.test.data.1()
+
+  test.df <- data.frame(x = test.data$x, y = test.data$y)
+  wu.test.out <- wu.test.formula(y~., data=test.df)
+
+  #expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, method)
+  expect_equal(wu.test.out$data.name, 'y, x.1, x.2, x.3, x.4, x.5, x.6, x.7, and x.8')
+})
+
+test_that("test wu.test.formula: data is logical, wu.test.formula(y~x)",{
+  test.data <- get.test.data.1()
+
+  test.df <- data.frame(x = test.data$x, y = test.data$y)
+  attach(test.df, warn.conflicts = FALSE)
+  wu.test.out <- wu.test.formula(y~x)
+
+  #expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, method)
+  expect_equal(wu.test.out$data.name, 'y and x')
+})
+
+test_that("test wu.test.formula: data is logical, wu.test.formula(y~X1+X2+X3+X4+X5+X6+X7+X8, data=test.df)",{
+  test.data <- get.test.data.1()
+
+  test.df <- data.frame(x = test.data$x, y = test.data$y)
+  wu.test.out <- wu.test.formula(y~x.1+x.2+x.3+x.4+x.5+x.6+x.7+x.8, data=test.df)
+
+  #expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, method)
+  expect_equal(wu.test.out$data.name, 'y, x.1, x.2, x.3, x.4, x.5, x.6, x.7, and x.8')
+})
+
+test_that("test wu.test.formula: data is logical, wu.test.formula(y~x.1+x.2+x.3+x.4+x.5+x.6+x.7+x.8, data=test.df)",{
+  test.data <- get.test.data.1()
+
+  test.df <- data.frame(x = test.data$x, y = test.data$y)
+  attach(test.df, warn.conflicts = FALSE)
+  wu.test.out <- wu.test.formula(y~x.1+x.2+x.3+x.4+x.5+x.6+x.7+x.8)
+
+  #expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, method)
+  expect_equal(wu.test.out$data.name, 'y, x.1, x.2, x.3, x.4, x.5, x.6, x.7, and x.8')
+})
+
+#########################
+# Long format formula
+#########################
