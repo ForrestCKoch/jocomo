@@ -76,6 +76,60 @@ test_that("test wu.test.default: data is character, x is matrix",{
   expect_equal(wu.test.out$data.name, 'x and y')
 })
 
+test_that("test wu.test.default: data is character, x is matrix -- 2",{
+  test.data <- get.test.data.1()
+  suppressMessages(attach(test.data))
+  x <- matrix(LETTERS[as.numeric(c(x))+1], nrow=length(y))
+  y <- LETTERS[as.numeric(c(y))+1]
+
+  wu.test.out <- wu.test.default(x, y)
+
+  #expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, method)
+  expect_equal(wu.test.out$data.name, 'x and y')
+})
+
+test_that("test wu.test.default: data is unordered factor, x is matrix",{
+  test.data <- get.test.data.1()
+  suppressMessages(attach(test.data))
+  x <- matrix(factor(LETTERS[as.numeric(c(x))+1]), nrow=length(y))
+  y <- factor(LETTERS[as.numeric(c(y))+1])
+
+  wu.test.out <- wu.test.default(x, y)
+
+  #expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, method)
+  expect_equal(wu.test.out$data.name, 'x and y')
+})
+
+test_that("test wu.test.default: data is ordered factor, x is matrix",{
+  test.data <- get.test.data.1()
+  suppressMessages(attach(test.data))
+  x <- matrix(factor(LETTERS[as.numeric(c(x))+1], ordered=T), nrow=length(y))
+  y <- factor(LETTERS[as.numeric(c(y))+1], ordered=T)
+
+  wu.test.out <- wu.test.default(x, y)
+
+  #expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, method)
+  expect_equal(wu.test.out$data.name, 'x and y')
+})
+
 test_that("test wu.test.default: data is logical, x is vector, models and subjects are factors",{
   test.data <- get.test.data.1()
   suppressMessages(attach(test.data))
