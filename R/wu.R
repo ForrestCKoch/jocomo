@@ -1,3 +1,12 @@
+#' An implementation of Wu's test from Wu 2023 (doi: 10.1080/10543406.2022.2065500)
+#'
+#' @param x a \eqn{p*q} matrix of binary predictions with \eqn{p} subjects as rows and \eqn{q} models as columns.
+#' @param y a logical vector of length \eqn{p} indicating the positive cases.
+#' @param ... further arguments to be passed to or from methods.
+#' @rdname wu.test
+#' @export
+wu.test <- function(x, ...) UseMethod("wu.test")
+
 #' @rdname wu.test
 #' @method wu.test default
 #' @exportS3Method jocomo::wu.test default
@@ -111,7 +120,7 @@ wu.test.formula <- function(formula, data = NULL, ...){
     if (any(wide.formula)){
         if ((typeof(formula[[3L]][[1L]]) != as.name("symbol"))
             || (typeof(formula[[3L]][[2L]]) != as.name("language"))
-            || (length(formula[[3L]][[2L]] != 3L))
+            || (length(formula[[3L]][[2L]]) != 3L)
             || (typeof(formula[[3L]][[3L]]) != as.name("symbol")))
             stop("Incorrect specification for 'formula'")
 
@@ -185,16 +194,6 @@ wu.test.formula <- function(formula, data = NULL, ...){
     #wu.test.default(x=x, y=y, ...)
 }
 
-#' An implementation of Wu's test from Wu 2023 (doi: 10.1080/10543406.2022.2065500)
-#'
-#' @param x a \eqn{p*q} matrix of binary predictions with \eqn{p} subjects as rows and \eqn{q} models as columns.
-#' @param y a logical vector of length \eqn{p} indicating the positive cases.
-#' @param ... further arguments to be passed to or from methods.
-#' @rdname wu.test
-#' @export
-wu.test <- function(x, ...){
-    UseMethod("wu.test")
-}
 
 #' An implementation of the extended McNemar statistic from Wu 2023 (doi: 10.1080/10543406.2022.2065500)
 #'
@@ -257,34 +256,3 @@ wu.statistic <- function(x, y, correct=F){
       t(b) %*% solve(B) %*% b
     )
 }
-
-
-friedman.test.formula <-
-  function(formula, data, subset, na.action, ...)
-  {
-    if(missing(formula))
-      stop("formula missing")
-    ## <FIXME>
-    ## Maybe put this into an internal rewriteTwoWayFormula() when
-    ## adding support for strata()
-    if((length(formula) != 3L)
-       || (length(formula[[3L]]) != 3L)
-       || (formula[[3L]][[1L]] != as.name("|"))
-       || (length(formula[[3L]][[2L]]) != 1L)
-       || (length(formula[[3L]][[3L]]) != 1L))
-      stop("incorrect specification for 'formula'")
-    formula[[3L]][[1L]] <- as.name("+")
-    ## </FIXME>
-    m <- match.call(expand.dots = FALSE)
-    m$formula <- formula
-    if(is.matrix(eval(m$data, parent.frame())))
-      m$data <- as.data.frame(data)
-    ## need stats:: for non-standard evaluation
-    m[[1L]] <- quote(stats::model.frame)
-    mf <- eval(m, parent.frame())
-    DNAME <- paste(names(mf), collapse = " and ")
-    names(mf) <- NULL
-    y <- do.call("friedman.test", as.list(mf))
-    y$data.name <- DNAME
-    y
-  }
