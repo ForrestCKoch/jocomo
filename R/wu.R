@@ -1,23 +1,32 @@
 #' An implementation of Wu's test from Wu 2023 (doi: 10.1080/10543406.2022.2065500)
 #'
-#' @param x a \eqn{p*q} matrix of binary predictions with \eqn{p} subjects as rows and \eqn{q} models as columns.
-#' @param y a logical vector of length \eqn{p} indicating the positive cases.
-#' @param ... further arguments to be passed to or from methods.
+#' @param ... Additional arguments passed on to methods.
 #' @rdname wu.test
 #' @export
-wu.test <- function(x, ...) UseMethod("wu.test")
+wu.test <- function(...) UseMethod("wu.test")
 
+#' @param x Can be either a `matrix`, `data.frame`, or `vector` of model predictions.
+#' As a `matrix` or `data.frame`, `x` should be a \eqn{p*q} `matrix` of binary
+#' predictions with \eqn{p} subjects as rows and \eqn{q} models as columns. If
+#' `x` is a `vector`, it should have length \eqn{p*q} and both `models` and
+#' `subjects` must be specified. The data must be able to be coerced to a `factor`
+#' with two levels. Ignored if a formula is specified.
+#' @param y If `x` is a `matrix` or `data.frame`, then `y` must be a `vector` of
+#' length \eqn{p} indicating positive and negative cases. If `x` is a `vector`,
+#' then `y` must be a `vector` of length \eqn{p*q}. The data must be able to be
+#' coerced to a `factor` with the same two levels as `x`. Ignored if a formula is
+#' specified.
+#' @param models A `vector` of length \eqn{p*q} indicating which model the datum
+#' corresponds to. This should have \eqn{q} levels each occurring exactly \eqn{p}
+#' times. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.
+#' @param subjects A `vector` of length \eqn{p*q} indicating which subject the datum
+#' corresponds to. This should have \eqn{p} levels each occurring exactly \eqn{q}
+#' times. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.
 #' @rdname wu.test
 #' @method wu.test default
 #' @exportS3Method jocomo::wu.test default
 wu.test.default <- function(x, y, models, subjects, ...){
-    # J <- dim(x)[2]
-    # X_EM <- wu.statistic(x=x, y=y)
-    # p.value <- stats::pchisq(X_EM, df=2*(J-1), lower.tail=F)
-    # list(statistic=X_EM, p.value=p.value)
-
-    # The following code is essentially copied and reworked from stats::friedman.test
-
+    # The following code is adapted from stats::friedman.test
 
     # If x is a matrix then we don't need to do much
     if (is.matrix(x) | is.data.frame(x)) {
@@ -100,6 +109,7 @@ wu.test.default <- function(x, y, models, subjects, ...){
               class = "htest")
 }
 
+#' @param formula
 #' @rdname wu.test
 #' @method wu.test formula
 #' @exportS3Method jocomo::wu.test formula
@@ -256,3 +266,19 @@ wu.statistic <- function(x, y, correct=F){
       t(b) %*% solve(B) %*% b
     )
 }
+
+coronary.disease.tabulated <- data.frame(
+  Freq=c(215, 571, 9, 20, 31, 152, 1, 24,
+         22, 47, 13, 33, 16, 160, 25, 126),
+  expand.grid(T3=factor(c(1,0), levels=c(0,1)),
+              T2=factor(c(1,0), levels=c(0,1)),
+              T1=factor(c(1,0), levels=c(0,1)),
+              D=factor(c(1,0), levels=c(0,1)))
+)
+
+coronary.disease <- do.call(rbind,apply(coronary.disease.tabulated, 1, \(r){
+   data.frame(D=rep(r['D'], r['Freq']),
+              T1=rep(r['T1'], r['Freq']),
+              T2=rep(r['T2'], r['Freq']),
+              T3=rep(r['T3'], r['Freq']))
+}))
