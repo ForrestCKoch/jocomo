@@ -109,11 +109,22 @@ wu.test.default <- function(x, y, models, subjects, ...){
               class = "htest")
 }
 
-#' @param formula
+#' @param formula A two-sided formula object describing predictions across
+#' multiple models and subjects. The term on the left of the ~ operator should
+#' refer to a factor with two levels indicating the true labels for each subject.
+#' Two formats may be used to specify the right hand side of the formula depending
+#' on the shape of the input.  If the data is in wide format, terms should be
+#' separated by + operators and refer to predictions from each model.  If the data
+#' is in long format, it should take the form `x:y|z` where `x` are the model predictions,
+#' `y` describes the model which yielded the prediction, and `z` describes the
+#' subject which the prediction is for.
+#' @param data an optional data frame containing the variables named in formula.
+#' By default the variables are taken from the environment from which `wu.test` is
+#' called. While data is optional, the package authors strongly recommend its use.
 #' @rdname wu.test
 #' @method wu.test formula
 #' @exportS3Method jocomo::wu.test formula
-wu.test.formula <- function(formula, data = NULL, ...){
+wu.test.formula <- function(formula, data = parent.frame(), ...){
 
     # Sanity checks
     if (missing(formula))
@@ -121,13 +132,19 @@ wu.test.formula <- function(formula, data = NULL, ...){
     if (length(formula) != 3L)
         stop("incorrect specification for 'formula'")
 
-    wide.formula <- F
+    long.formula <- F
+    xtabs.formula <- F
     if (typeof(formula[[3L]]) == as.name("language"))
-        if (formula[[3L]][[1L]] != as.name('+'))
-            wide.formula <- T
+        if (formula[[3L]][[1L]] != as.name('+')){
+            if (formula[[3L]][[1L]] == as.name('|'))
+                long.formula <- T
+            if (formula[[3L]][[1L]] == as.name('||'))
+                xtabs.formula <- T
+        }
+
     # This formula follows the long format specification
     # if so, formula should be in the format of y~x:model|subject
-    if (any(wide.formula)){
+    if (long.formula){
         if ((typeof(formula[[3L]][[1L]]) != as.name("symbol"))
             || (typeof(formula[[3L]][[2L]]) != as.name("language"))
             || (length(formula[[3L]][[2L]]) != 3L)
@@ -139,6 +156,8 @@ wu.test.formula <- function(formula, data = NULL, ...){
             stop("Incorrect specification for 'formula'")
 
         return(.wu.test.formula.long(formula=formula, data=data, ...))
+    }else if (xtabs.formula){
+        return(.wu.test.formula.xtabs(formula=formula, data=data, ...))
     }else{
       # Is it save to assume  this is wide format?
       # I'm not sure, but for now I will ...
@@ -147,7 +166,7 @@ wu.test.formula <- function(formula, data = NULL, ...){
 
 }
 
-.wu.test.formula.long <- function(formula, data = NULL, ...){
+.wu.test.formula.long <- function(formula, data = parent.frame, ...){
 
     formula[[3L]][[1L]] <- as.name('+')
     formula[[3L]][[2L]][[1L]] <- as.name('+')
@@ -174,7 +193,7 @@ wu.test.formula <- function(formula, data = NULL, ...){
 
 }
 
-.wu.test.formula.wide <- function(formula, data = NULL, ...){
+.wu.test.formula.wide <- function(formula, data = parent.frame, ...){
     #attr(tf, "intercept") <- 0
     if (!is.null(data)){
         tf <- terms(formula, data=data)
@@ -204,13 +223,80 @@ wu.test.formula <- function(formula, data = NULL, ...){
     #wu.test.default(x=x, y=y, ...)
 }
 
+.wu.test.formula.xtabs <- function(formula, data = parent.frame(), ...){
+
+    formula[[3L]][[1L]] <- as.name('+')
+    tmp <- formula[[3L]][[2L]]
+    formula[[3L]][[2L]] <- formula[[3L]][[3L]]
+    formula[[3L]][[2L]] <- tmp
+
+    xt <- xtabs(formula=formula, data=data)
+
+    tf <- terms(formula, data=data)
+    mf <- stats::model.frame(tf, data=data)
+
+    if(dim(mf)[2L] != 4L)
+        stop("Incorrect specification for 'formula'")
+
+    nmf <- names(mf)
+    DNAME <- paste0(paste0(names(mf)[1:(length(nmf)-1)], collapse = ", "),
+                    ', and ', nmf[length(nmf)])
+
+    ret <- wu.test(xt)
+    ret$data.name <- DNAME
+    ret
+
+}
+
+#' @param xt An `xtabs` object of 3 or more dimensions indicating the
+#' cross-tabulation of model predictions and true labels. Each factor must have
+#' exactly two levels. The first dimension should refer to the true labels
+#' while the remaining dimensions refer to the model predictions.
+#' @rdname wu.test
+#' @method wu.test xtabs
+#' @exportS3Method jocomo::wu.test xtabs
+wu.test.xtabs <- function(xt, ...){
+
+    if (!is.table(cdt))
+        stop("xt must be an xtabs or table object")
+
+    if(any(dim(xt) != 2))
+        stop("All factors of xt must have exactly 2 levels.")
+
+    k <- length(dim(xt))-1
+    if(k < 1)
+        stop("xt has too few dimensions")
+
+    # If x is a matrix then we don't need to do much
+    DNAME <- paste0(deparse(substitute(xt)))
+
+    STATISTIC <- wu.statistic(xt = xt, ...)
+    PARAMETER <- 2*(dim(x)[2]-1)
+    PVAL <- stats::pchisq(STATISTIC, df = PARAMETER, lower.tail = FALSE)
+
+    ## <FIXME split.matrix>
+    names(STATISTIC) <- "Wu chi-squared"
+    names(PARAMETER) <- "df"
+
+    structure(list(statistic = STATISTIC,
+                   parameter = PARAMETER,
+                   p.value = PVAL,
+                   method = "Wu's test",
+                   data.name = DNAME),
+              class = "htest")
+}
 
 #' An implementation of the extended McNemar statistic from Wu 2023 (doi: 10.1080/10543406.2022.2065500)
 #'
+#' @param ... Additional arguments passed on to methods.
+#' @rdname wu.test
+#' @export
+wu.statistic <- function(...) UseMethod("wu.statistic")
+
 #' @inheritParams wu.test
 #' @param correct Add 0.5 to each cell of the 2x2 contingency table to adjust for 0 counts
 #' @export
-wu.statistic <- function(x, y, correct=F){
+wu.statistic.default <- function(x, y, correct=F){
     x <- structure(x==max(x), dim=dim(x), class=c('matrix', 'logical'))
     y <- y==max(y)
 
@@ -267,6 +353,68 @@ wu.statistic <- function(x, y, correct=F){
     )
 }
 
+
+#' @param xt An `xtabs` object of 3 or more dimensions indicating the
+#' cross-tabulation of model predictions and true labels. Each factor must have
+#' exactly two levels. The first dimension should refer to the true labels
+#' while the remaining dimensions refer to the model predictions.
+#' @param correct Add 0.5 to each cell of the 2x2 contingency table to adjust for 0 counts
+#' @export
+wu.statistic.xtabs <- function(xt, correct=F){
+
+    if(any(dim(xt) != 2))
+        stop("All factors of xt must have exactly 2 levels.")
+
+
+    #p <- dim(x)[1]
+    q <- length(dim(xt))-1
+    if(q < 1)
+        stop("xt has too few dimensions")
+
+    # x.pred.pos.cases <- x[y,]
+    # x.pred.neg.cases <- x[!y,]
+
+    xt.df <- data.frame(xt)
+    freq <- xt.df$Freq
+    X <- subset(xt.df, select=-Freq)[,-1]
+    y <- subset(xt.df, select=-Freq)[,1]
+
+    k <- 1
+    n01 <- c()
+    n10 <- c()
+    m01 <- c()
+    m10 <- c()
+
+    for(i in 2:q){
+        for(j in 2:q){
+            sub.xt <- xtabs(freq~y+X[,1]+X[,i]+X[,j])
+
+            n01[k] <- sub.xt[1,1,2,2] + ifelse(correct, 0.5, 0)
+            n10[k] <- sub.xt[1,2,1,1] + ifelse(correct, 0.5, 0)
+            m01[k] <- sub.xt[2,1,2,2] + ifelse(correct, 0.5, 0)
+            m10[k] <- sub.xt[2,2,1,1] + ifelse(correct, 0.5, 0)
+
+            k <- k+1
+      }
+    }
+
+    N01 <- matrix(n01, nrow=q-1)
+    N10 <- matrix(n10, nrow=q-1)
+    M01 <- matrix(m01, nrow=q-1)
+    M10 <- matrix(m10, nrow=q-1)
+
+    a <- diag(N10)-diag(N01)
+    A <- N10+N01
+
+    b <- diag(M10)-diag(M01)
+    B <- M10+M01
+
+    as.numeric(
+      t(a) %*% solve(A) %*% a +
+      t(b) %*% solve(B) %*% b
+    )
+}
+
 coronary.disease.tabulated <- data.frame(
   Freq=c(215, 571, 9, 20, 31, 152, 1, 24,
          22, 47, 13, 33, 16, 160, 25, 126),
@@ -276,7 +424,7 @@ coronary.disease.tabulated <- data.frame(
               D=factor(c(1,0), levels=c(0,1)))
 )
 
-coronary.disease <- do.call(rbind,apply(coronary.disease.tabulated, 1, \(r){
+coronary.disease.long <- do.call(rbind,apply(coronary.disease.tabulated, 1, \(r){
    data.frame(D=rep(r['D'], r['Freq']),
               T1=rep(r['T1'], r['Freq']),
               T2=rep(r['T2'], r['Freq']),
