@@ -275,6 +275,7 @@ test_that("test .wu.test.formula.wide: data is attached logical data.frame, wu.t
   expect_equal(wu.test.out$data.name, 'y and x')
 })
 
+
 test_that("test .wu.test.formula.wide: data is logical data.frame, wu.test.formula(y~X1+X2+X3+X4+X5+X6+X7+X8, data=test.df)",{
   test.data <- get.test.data.1()
 
@@ -332,4 +333,40 @@ test_that("test .wu.test.formula.long: data.frame, y/x are logical, models and s
   expect_equal(wu.test.out$p.value, pvalue)
   expect_equal(wu.test.out$method, method)
   expect_equal(wu.test.out$data.name, 'y, x, models, and subjects')
+})
+
+###########################
+# Cross tabulated
+###########################
+
+test_that("test wu.test.xtabs: data is cross tab",{
+  test.data <- get.test.data.1()
+
+  test.xt <- xtabs(~y+., data = data.frame(x = test.data$x, y = test.data$y))
+  wu.test.out <- wu.test(test.xt)
+
+  #expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, method)
+  #expect_equal(wu.test.out$data.name, 'y and x')
+})
+
+test_that("test .wu.test.formula.xtabs: data is cross tab, wu.test.formula(Freq~.||y)",{
+  test.data <- get.test.data.1()
+
+  test.df <- data.frame(xtabs(~y+., data = data.frame(x = test.data$x, y = test.data$y)))
+  wu.test.out <- wu.test(Freq~.||y, data = test.df)
+
+  #expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, method)
+  #expect_equal(wu.test.out$data.name, 'y and x')
 })

@@ -110,19 +110,32 @@ wu.test.default <- function(x, y, models, subjects, ...){
 }
 
 #' @param formula A two-sided formula object describing predictions across
-#' multiple models and subjects. The term on the left of the ~ operator should
-#' refer to a factor with two levels indicating the true labels for each subject.
-#' Two formats may be used to specify the right hand side of the formula depending
-#' on the shape of the input.  If the data is in wide format, terms should be
-#' separated by + operators and refer to predictions from each model.  If the data
-#' is in long format, it should take the form `x:y|z` where `x` are the model predictions,
-#' `y` describes the model which yielded the prediction, and `z` describes the
-#' subject which the prediction is for.
+#' multiple models and subjects. Formulas may be specified in either wide, long,
+#' or cross-tabulated format. Refer to 'Details' for more information regarding
+#' formula specification.
 #' @param data an optional data frame containing the variables named in formula.
 #' By default the variables are taken from the environment from which `wu.test` is
 #' called. While data is optional, the package authors strongly recommend its use.
 #' @rdname wu.test
 #' @method wu.test formula
+#' @details Three formats are availabe for formula specification.
+#'
+#' Wide format: The term on the left of the ~ operator should
+#' refer to a factor with two levels indicating the true labels for each subject.
+#' Terms should be separated by + operators and refer to predictions from each model.
+#'
+#' Long format: The term on the left of the ~ operator should
+#' refer to a factor with two levels indicating the true labels for each subject.
+#' The formula should take the form `x:y|z` where `x` are the model predictions,
+#' `y` describes the model which yielded the prediction, and `z` describes the
+#' subject which the prediction is for.
+#'
+#' Cross-tabulated format: The term on the left of the ~ operator should refer to
+#' the frequency, or total counts, for that stratum. Terms should be separated by + operators
+#' and refer to predictions from each model. An additional term, separated from
+#' the others by `||` should be included on the right hand side of the formula.
+#' e.g with 3 models, x1, x2, and x3, and true labels y, the formula should follow
+#' `Freq ~ x1 + x2 + x3 || y`
 #' @exportS3Method jocomo::wu.test formula
 wu.test.formula <- function(formula, data = parent.frame(), ...){
 
@@ -194,7 +207,6 @@ wu.test.formula <- function(formula, data = parent.frame(), ...){
 }
 
 .wu.test.formula.wide <- function(formula, data = parent.frame, ...){
-    #attr(tf, "intercept") <- 0
     if (!is.null(data)){
         tf <- terms(formula, data=data)
         mf <- stats::model.frame(tf, data = data)
@@ -217,26 +229,19 @@ wu.test.formula <- function(formula, data = parent.frame(), ...){
     ret <- wu.test(x = x, y = y, ...)
     ret$data.name <- DNAME
     ret
-
-    # x <- model.matrix(tf, data=data)
-    # y <- model.response(model.frame(tf, data=data))
-    #wu.test.default(x=x, y=y, ...)
 }
 
 .wu.test.formula.xtabs <- function(formula, data = parent.frame(), ...){
 
-    formula[[3L]][[1L]] <- as.name('+')
     tmp <- formula[[3L]][[2L]]
     formula[[3L]][[2L]] <- formula[[3L]][[3L]]
     formula[[3L]][[2L]] <- tmp
+    formula[[3L]][[1L]] <- as.name('+')
 
     xt <- xtabs(formula=formula, data=data)
 
     tf <- terms(formula, data=data)
     mf <- stats::model.frame(tf, data=data)
-
-    if(dim(mf)[2L] != 4L)
-        stop("Incorrect specification for 'formula'")
 
     nmf <- names(mf)
     DNAME <- paste0(paste0(names(mf)[1:(length(nmf)-1)], collapse = ", "),
@@ -257,7 +262,7 @@ wu.test.formula <- function(formula, data = parent.frame(), ...){
 #' @exportS3Method jocomo::wu.test xtabs
 wu.test.xtabs <- function(xt, ...){
 
-    if (!is.table(cdt))
+    if (!is.table(xt))
         stop("xt must be an xtabs or table object")
 
     if(any(dim(xt) != 2))
@@ -271,7 +276,7 @@ wu.test.xtabs <- function(xt, ...){
     DNAME <- paste0(deparse(substitute(xt)))
 
     STATISTIC <- wu.statistic(xt = xt, ...)
-    PARAMETER <- 2*(dim(x)[2]-1)
+    PARAMETER <- 2*(length(dim(xt))-2)
     PVAL <- stats::pchisq(STATISTIC, df = PARAMETER, lower.tail = FALSE)
 
     ## <FIXME split.matrix>
