@@ -80,7 +80,7 @@ wu.test.default <- function(x, y, models, subjects, ...){
 
     ## <FIXME split.matrix> -- From friedman.test??
     x <- matrix(unlist(split(c(x), subjects)), ncol = k, byrow = TRUE)
-    to.keep <- complete.cases(x) & complete.cases(y)
+    to.keep <- stats::complete.cases(x) & stats::complete.cases(y)
     y <- y[to.keep] # We only need the first column as it should not change
     x <- x[to.keep,]
     n <- nrow(x)
@@ -185,7 +185,7 @@ wu.test.formula <- function(formula, data = parent.frame(), ...){
     formula[[3L]][[2L]][[1L]] <- as.name('+')
 
 
-    tf <- terms(formula, data=data)
+    tf <- stats::terms(formula, data=data)
     mf <- stats::model.frame(tf, data=data)
 
     if(dim(mf)[2L] != 4L)
@@ -208,10 +208,10 @@ wu.test.formula <- function(formula, data = parent.frame(), ...){
 
 .wu.test.formula.wide <- function(formula, data = parent.frame, ...){
     if (!is.null(data)){
-        tf <- terms(formula, data=data)
+        tf <- stats::terms(formula, data=data)
         mf <- stats::model.frame(tf, data = data)
     }else{
-        tf <- terms(formula)
+        tf <- stats::terms(formula)
         mf <- stats::model.frame(tf)
     }
 
@@ -238,9 +238,9 @@ wu.test.formula <- function(formula, data = parent.frame(), ...){
     formula[[3L]][[2L]] <- tmp
     formula[[3L]][[1L]] <- as.name('+')
 
-    xt <- xtabs(formula=formula, data=data)
+    xt <- stats::xtabs(formula=formula, data=data)
 
-    tf <- terms(formula, data=data)
+    tf <- stats::terms(formula, data=data)
     mf <- stats::model.frame(tf, data=data)
 
     nmf <- names(mf)
@@ -298,10 +298,14 @@ wu.test.xtabs <- function(xt, ...){
 #' @export
 wu.statistic <- function(...) UseMethod("wu.statistic")
 
-#' @inheritParams wu.test
+#' @param x An object which can be coerced to a `matrix` of size \eqn{p*q} where
+#' \eqn{p} is the number of subjects and \eqn{q} is the number of models.
+#' The data should consist of two ordered levels and is coerced into a logical `matrix`.
+#' @param y A `vector` of length \eqn{p} where
+#' The data should consist of two ordered levels and is coerced into a logical `vector`.
 #' @param correct Add 0.5 to each cell of the 2x2 contingency table to adjust for 0 counts
 #' @export
-wu.statistic.default <- function(x, y, correct=F){
+wu.statistic.default <- function(x, y, correct=F, ...){
     x <- structure(x==max(x), dim=dim(x), class=c('matrix', 'logical'))
     y <- y==max(y)
 
@@ -365,7 +369,7 @@ wu.statistic.default <- function(x, y, correct=F){
 #' while the remaining dimensions refer to the model predictions.
 #' @param correct Add 0.5 to each cell of the 2x2 contingency table to adjust for 0 counts
 #' @export
-wu.statistic.xtabs <- function(xt, correct=F){
+wu.statistic.xtabs <- function(xt, correct=F, ...){
 
     if(any(dim(xt) != 2))
         stop("All factors of xt must have exactly 2 levels.")
@@ -380,7 +384,8 @@ wu.statistic.xtabs <- function(xt, correct=F){
     # x.pred.neg.cases <- x[!y,]
 
     xt.df <- data.frame(xt)
-    freq <- xt.df$Freq
+    freq <- xt.df[['Freq']]
+    Freq <- NULL # Needed to remove notes, should be defined in xt.df ...
     X <- subset(xt.df, select=-Freq)[,-1]
     y <- subset(xt.df, select=-Freq)[,1]
 
@@ -392,7 +397,7 @@ wu.statistic.xtabs <- function(xt, correct=F){
 
     for(i in 2:q){
         for(j in 2:q){
-            sub.xt <- xtabs(freq~y+X[,1]+X[,i]+X[,j])
+            sub.xt <- stats::xtabs(freq~y+X[,1]+X[,i]+X[,j])
 
             n01[k] <- sub.xt[1,1,2,2] + ifelse(correct, 0.5, 0)
             n10[k] <- sub.xt[1,2,1,1] + ifelse(correct, 0.5, 0)

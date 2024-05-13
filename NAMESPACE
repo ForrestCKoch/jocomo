@@ -2,6 +2,9 @@
 
 S3method(jocomo::wu.test,default)
 S3method(jocomo::wu.test,formula)
+S3method(jocomo::wu.test,xtabs)
+S3method(wu.statistic,default)
+S3method(wu.statistic,xtabs)
 export(hello)
 export(wu.statistic)
 export(wu.test)
