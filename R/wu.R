@@ -241,7 +241,7 @@ wu.test.formula <- function(formula, data = parent.frame(), ...) {
 .wu.test.formula.xtabs <- function(formula, data, ...) {
     tmp <- formula[[3L]][[2L]]
     formula[[3L]][[2L]] <- formula[[3L]][[3L]]
-    formula[[3L]][[2L]] <- tmp
+    formula[[3L]][[3L]] <- tmp
     formula[[3L]][[1L]] <- as.name("+")
 
     xt <- stats::xtabs(formula = formula, data = data)
@@ -431,9 +431,11 @@ coronary.disease.tabulated <- data.frame(
               T1 = factor(c(1, 0), levels = c(0, 1)),
               D = factor(c(1, 0), levels = c(0,1))))
 
-coronary.disease.long <- do.call(rbind, apply(coronary.disease.tabulated, 1, \(r) {
+coronary.disease.wide <- do.call(rbind, apply(coronary.disease.tabulated, 1, \(r) {
     data.frame(D = rep(r["D"], r["Freq"]),
                T1 = rep(r["T1"], r["Freq"]),
                T2 = rep(r["T2"], r["Freq"]),
                T3 = rep(r["T3"], r["Freq"]))
 }))
+
+

@@ -378,3 +378,83 @@ test_that("test .wu.test.formula.xtabs: data is cross tab, wu.test.formula(Freq~
   expect_equal(wu.test.out$method, method)
   # expect_equal(wu.test.out$data.name, 'y and x')
 })
+
+#####################################
+# Testing coronary.disease.tabulated
+#####################################
+
+test_that("test coronary.disease.tabulated: xtabs", {
+  wu.test.out <- wu.test(xtabs(Freq ~ D + .,  data = coronary.disease.tabulated))
+
+  statistic <- 811.3
+  names(statistic) <- "Wu chi-squared"
+  pvalue <- 0
+  df <- 4
+  names(df) <- "df"
+
+  # expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic, tolerance = 1e-2)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, "Wu's test")
+  # expect_equal(wu.test.out$data.name, 'y and x')
+})
+
+test_that("test coronary.disease.tabulated: xtabs formula", {
+  wu.test.out <- wu.test(Freq ~ . || D,  data = coronary.disease.tabulated)
+
+  statistic <- 811.3
+  names(statistic) <- "Wu chi-squared"
+  pvalue <- 0
+  df <- 4
+  names(df) <- "df"
+
+  # expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic, tolerance = 1e-2)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, "Wu's test")
+  # expect_equal(wu.test.out$data.name, 'y and x')
+})
+
+test_that("test coronary.disease.tabulated: xtabs formula", {
+  wu.test.out <- wu.test(Freq ~ T1 + T2 + T3 || D,  data = coronary.disease.tabulated)
+
+  statistic <- 811.3
+  names(statistic) <- "Wu chi-squared"
+  pvalue <- 0
+  df <- 4
+  names(df) <- "df"
+
+  # expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic, tolerance = 1e-2)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, "Wu's test")
+  # expect_equal(wu.test.out$data.name, 'y and x')
+})
+
+test_that("test coronary.disease.wide: formula", {
+  wu.test.out <- wu.test(D ~ .,  data = coronary.disease.wide)
+
+  statistic <- 811.3
+  names(statistic) <- "Wu chi-squared"
+  pvalue <- 0
+  df <- 4
+  names(df) <- "df"
+
+  # expect_invisible(wu.test.default(x, y))
+  expect_length(wu.test.out, 5)
+  expect_equal(names(wu.test.out), c("statistic", "parameter", "p.value", "method", "data.name"))
+  expect_equal(wu.test.out$statistic, statistic, tolerance = 1e-2)
+  expect_equal(wu.test.out$parameter, df)
+  expect_equal(wu.test.out$p.value, pvalue)
+  expect_equal(wu.test.out$method, "Wu's test")
+  # expect_equal(wu.test.out$data.name, 'y and x')
+})
