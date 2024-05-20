@@ -39,7 +39,7 @@ wu.test.default <- function(x, y, models, subjects, ...) {
         models <- factor(c(col(x)))
         subjects <- factor(c(row(x)))
 
-        if (any(diff(c(length(y), dim(x)[1]))) != 0L) {
+        if (any(diff(c(length(y), dim(x)[1L]))) != 0L) {
             stop("Number of rows in x does not match length of y")
         }
 
@@ -81,11 +81,11 @@ wu.test.default <- function(x, y, models, subjects, ...) {
         y <- matrix(unlist(split(c(y), subjects)), ncol = k, byrow = TRUE)
 
         # Make sure y is consistent for each subject
-        if (any(apply(y, 1, \(s) length(unique(s)), simplify = T) != 1L)) {
+        if (any(apply(y, 1L, \(s) length(unique(s)), simplify = T) != 1L)) {
             stop("'y' must not differ within levels of 'subjects'")
         }
         # Remove unecessary data from y and convert to a vector ...
-        y <- as.vector(y[, 1])
+        y <- as.vector(y[, 1L])
     }
 
     ## <FIXME split.matrix> -- From friedman.test??
@@ -105,7 +105,7 @@ wu.test.default <- function(x, y, models, subjects, ...) {
     }
 
     STATISTIC <- wu.statistic(x = x, y = y)
-    PARAMETER <- 2 * (dim(x)[2] - 1)
+    PARAMETER <- 2L * (dim(x)[2L] - 1L)
     PVAL <- stats::pchisq(STATISTIC, df = PARAMETER, lower.tail = FALSE)
 
     ## <FIXME split.matrix>
@@ -202,7 +202,7 @@ wu.test.formula <- function(formula, data = parent.frame(), ...) {
     }
 
     nmf <- names(mf)
-    DNAME <- paste0(paste0(names(mf)[1:(length(nmf) - 1)], collapse = ", "), ", and ", nmf[length(nmf)])
+    DNAME <- paste0(paste0(names(mf)[1L:(length(nmf) - 1L)], collapse = ", "), ", and ", nmf[length(nmf)])
 
     y <- mf[, 1L]
     x <- mf[, 2L]
@@ -227,11 +227,11 @@ wu.test.formula <- function(formula, data = parent.frame(), ...) {
     if (length(nmf) == 2L) {
         DNAME <- paste0(nmf, collapse = " and ")
     } else {
-        DNAME <- paste0(paste0(nmf[1:(length(nmf) - 1)], collapse = ", "), ", and ", nmf[length(nmf)])
+        DNAME <- paste0(paste0(nmf[1L:(length(nmf) - 1L)], collapse = ", "), ", and ", nmf[length(nmf)])
     }
 
-    y <- mf[, 1]
-    x <- mf[, -1]
+    y <- mf[, 1L]
+    x <- mf[, -1L]
 
     ret <- wu.test(x = x, y = y, ...)
     ret$data.name <- DNAME
@@ -250,7 +250,7 @@ wu.test.formula <- function(formula, data = parent.frame(), ...) {
     mf <- stats::model.frame(tf, data = data)
 
     nmf <- names(mf)
-    DNAME <- paste0(paste0(names(mf)[1:(length(nmf) - 1)], collapse = ", "), ", and ", nmf[length(nmf)])
+    DNAME <- paste0(paste0(names(mf)[1L:(length(nmf) - 1L)], collapse = ", "), ", and ", nmf[length(nmf)])
 
     ret <- wu.test(xt)
     ret$data.name <- DNAME
@@ -269,12 +269,13 @@ wu.test.xtabs <- function(xt, ...) {
         stop("xt must be an xtabs or table object")
     }
 
-    if (any(dim(xt) != 2)) {
+    if (any(dim(xt) != 2L)) {
         stop("All factors of xt must have exactly 2 levels.")
     }
 
-    k <- length(dim(xt)) - 1
-    if (k < 1) {
+    k <- length(dim(xt)) - 1L
+
+    if (k < 1L) {
         stop("xt has too few dimensions")
     }
 
@@ -282,7 +283,7 @@ wu.test.xtabs <- function(xt, ...) {
     DNAME <- paste0(deparse(substitute(xt)))
 
     STATISTIC <- wu.statistic(xt = xt, ...)
-    PARAMETER <- 2 * (length(dim(xt)) - 2)
+    PARAMETER <- 2L * (length(dim(xt)) - 2L)
     PVAL <- stats::pchisq(STATISTIC, df = PARAMETER, lower.tail = FALSE)
 
     ## <FIXME split.matrix>
@@ -310,29 +311,29 @@ wu.statistic.default <- function(x, y, correct = F, ...) {
     x <- structure(x == max(x), dim = dim(x), class = c("matrix", "logical"))
     y <- y == max(y)
 
-    p <- dim(x)[1]
-    q <- dim(x)[2]
+    p <- dim(x)[1L]
+    q <- dim(x)[2L]
 
     x.pred.pos.cases <- x[y, ]
     x.pred.neg.cases <- x[!y, ]
 
 
-    k <- 1
+    k <- 1L
     n01 <- c()
     n10 <- c()
     m01 <- c()
     m10 <- c()
 
-    p1 <- x.pred.pos.cases[, 1] |>
+    p1 <- x.pred.pos.cases[, 1L] |>
         factor(levels = c(F, T))
-    n1 <- x.pred.neg.cases[, 1] |>
+    n1 <- x.pred.neg.cases[, 1L] |>
         factor(levels = c(F, T))
-    for (i in 2:q) {
+    for (i in 2L:q) {
         p2 <- x.pred.pos.cases[, i] |>
             factor(levels = c(F, T))
         n2 <- x.pred.neg.cases[, i] |>
             factor(levels = c(F, T))
-        for (j in 2:q) {
+        for (j in 2L:q) {
             p3 <- x.pred.pos.cases[, j] |>
                 factor(levels = c(F, T))
             n3 <- x.pred.neg.cases[, j] |>
@@ -341,19 +342,19 @@ wu.statistic.default <- function(x, y, correct = F, ...) {
             tb.pos <- table(p1, p2, p3) + ifelse(correct, 0.5, 0)
             tb.neg <- table(n1, n2, n3) + ifelse(correct, 0.5, 0)
 
-            n01[k] <- tb.pos[1, 2, 2]
-            n10[k] <- tb.pos[2, 1, 1]
-            m01[k] <- tb.neg[1, 2, 2]
-            m10[k] <- tb.neg[2, 1, 1]
+            n01[k] <- tb.pos[1L, 2L, 2L]
+            n10[k] <- tb.pos[2L, 1L, 1L]
+            m01[k] <- tb.neg[1L, 2L, 2L]
+            m10[k] <- tb.neg[2L, 1L, 1L]
 
-            k <- k + 1
+            k <- k + 1L
         }
     }
 
-    N01 <- matrix(n01, nrow = q - 1)
-    N10 <- matrix(n10, nrow = q - 1)
-    M01 <- matrix(m01, nrow = q - 1)
-    M10 <- matrix(m10, nrow = q - 1)
+    N01 <- matrix(n01, nrow = q - 1L)
+    N10 <- matrix(n10, nrow = q - 1L)
+    M01 <- matrix(m01, nrow = q - 1L)
+    M10 <- matrix(m10, nrow = q - 1L)
 
     a <- diag(N10) - diag(N01)
     A <- N10 + N01
@@ -372,14 +373,14 @@ wu.statistic.default <- function(x, y, correct = F, ...) {
 #' @param correct Add 0.5 to each cell of the 2x2 contingency table to adjust for 0 counts
 #' @export
 wu.statistic.xtabs <- function(xt, correct = F, ...) {
-    if (any(dim(xt) != 2)) {
+    if (any(dim(xt) != 2L)) {
         stop("All factors of xt must have exactly 2 levels.")
     }
 
 
     # p <- dim(x)[1]
-    q <- length(dim(xt)) - 1
-    if (q < 1) {
+    q <- length(dim(xt)) - 1L
+    if (q < 1L) {
         stop("xt has too few dimensions")
     }
 
@@ -391,29 +392,29 @@ wu.statistic.xtabs <- function(xt, correct = F, ...) {
     X <- subset(xt.df, select = -Freq)[, -1]
     y <- subset(xt.df, select = -Freq)[, 1]
 
-    k <- 1
+    k <- 1L
     n01 <- c()
     n10 <- c()
     m01 <- c()
     m10 <- c()
 
-    for (i in 2:q) {
-        for (j in 2:q) {
-            sub.xt <- stats::xtabs(freq ~ y + X[, 1] + X[, i] + X[, j])
+    for (i in 2L:q) {
+        for (j in 2L:q) {
+            sub.xt <- stats::xtabs(freq ~ y + X[, 1L] + X[, i] + X[, j])
 
-            n01[k] <- sub.xt[1, 1, 2, 2] + ifelse(correct, 0.5, 0)
-            n10[k] <- sub.xt[1, 2, 1, 1] + ifelse(correct, 0.5, 0)
-            m01[k] <- sub.xt[2, 1, 2, 2] + ifelse(correct, 0.5, 0)
-            m10[k] <- sub.xt[2, 2, 1, 1] + ifelse(correct, 0.5, 0)
+            n01[k] <- sub.xt[1L, 1L, 2L, 2L] + ifelse(correct, 0.5, 0)
+            n10[k] <- sub.xt[1L, 2L, 1L, 1L] + ifelse(correct, 0.5, 0)
+            m01[k] <- sub.xt[2L, 1L, 2L, 2L] + ifelse(correct, 0.5, 0)
+            m10[k] <- sub.xt[2L, 2L, 1L, 1L] + ifelse(correct, 0.5, 0)
 
-            k <- k + 1
+            k <- k + 1L
         }
     }
 
-    N01 <- matrix(n01, nrow = q - 1)
-    N10 <- matrix(n10, nrow = q - 1)
-    M01 <- matrix(m01, nrow = q - 1)
-    M10 <- matrix(m10, nrow = q - 1)
+    N01 <- matrix(n01, nrow = q - 1L)
+    N10 <- matrix(n10, nrow = q - 1L)
+    M01 <- matrix(m01, nrow = q - 1L)
+    M10 <- matrix(m10, nrow = q - 1L)
 
     a <- diag(N10) - diag(N01)
     A <- N10 + N01
@@ -425,18 +426,21 @@ wu.statistic.xtabs <- function(xt, correct = F, ...) {
 }
 
 coronary.disease.tabulated <- data.frame(
-  Freq = c(215, 571, 9, 20, 31, 152, 1, 24, 22, 47, 13, 33, 16, 160, 25, 126),
-  expand.grid(T3 = factor(c(1,0), levels = c(0, 1)),
-              T2 = factor(c(1, 0), levels = c(0, 1)),
-              T1 = factor(c(1, 0), levels = c(0, 1)),
-              D = factor(c(1, 0), levels = c(0,1))))
+  Freq = c(215L, 571L, 9L, 20L, 31L, 152L, 1L, 24L, 22L, 47L, 13L, 33L, 16L, 160L, 25L, 126L),
+  expand.grid(T3 = factor(c(1L, 0L), levels = c(0L, 1L)),
+              T2 = factor(c(1L, 0L), levels = c(0L, 1L)),
+              T1 = factor(c(1L, 0L), levels = c(0L, 1L)),
+              D =  factor(c(1L, 0L), levels = c(0L, 1L))))
 
-coronary.disease.wide <- do.call(rbind, apply(coronary.disease.tabulated, 1, \(r) {
+rownames(coronary.disease.tabulated) <- NULL
+
+coronary.disease.wide <- do.call(rbind, apply(coronary.disease.tabulated, 1L, \(r) {
     data.frame(D = rep(r["D"], r["Freq"]),
                T1 = rep(r["T1"], r["Freq"]),
                T2 = rep(r["T2"], r["Freq"]),
                T3 = rep(r["T3"], r["Freq"]))
 }))
+rownames(coronary.disease.wide) <- NULL
 
 coronary.disease.long <- cbind(coronary.disease.wide,
                                sample = factor(1L:dim(coronary.disease.wide)[1L])) |>
@@ -445,4 +449,4 @@ coronary.disease.long <- cbind(coronary.disease.wide,
          varying = c('T1', 'T2', 'T3'),
          v.names='x',
          timevar='model')
-
+rownames(coronary.disease.long) <- NULL

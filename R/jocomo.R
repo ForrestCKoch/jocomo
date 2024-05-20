@@ -28,14 +28,14 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
         models <- factor(c(col(x)))
         subjects <- factor(c(row(x)))
 
-        if (any(diff(c(length(y), dim(x)[1]))) != 0L) {
+        if (any(diff(c(length(y), dim(x)[1L]))) != 0L) {
             stop("Number of rows in x does not match length of y")
         }
 
 
         # Calculate the test statistic for each fold
         folds <- as.factor(folds)
-        s <- 1:length(y)
+        s <- 1L:length(y)
         wu.stats <- aggregate(s~folds, data=parent.frame(), FUN=\(idx, ...){
           wu.test(x = x[idx,],
                   y = y[idx])['statistic']
@@ -86,7 +86,7 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
 
         # Calculate the test statistic for each fold
         folds <- as.factor(folds)
-        s <- 1:length(y)
+        s <- 1L:length(y)
         wu.stats <- aggregate(s~folds, data=data.frame(s=s, folds=folds), FUN=\(idx, ...){
           as.numeric(
             wu.test(x = x[idx],
@@ -100,7 +100,7 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
     j <- as.numeric(nlevels(as.factor(folds)))
     k <- as.numeric(nlevels(as.factor(models)))
     STATISTIC <- as.numeric(sum(wu.stats['s']))
-    PARAMETER <- 2 * j * (k - 1)
+    PARAMETER <- 2L * j * (k - 1L)
     PVAL <- stats::pchisq(STATISTIC, df = PARAMETER, lower.tail = FALSE)
 
     ## <FIXME split.matrix>
