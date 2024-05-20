@@ -189,7 +189,7 @@ wu.test.formula <- function(formula, data = parent.frame(), ...) {
     }
 }
 
-.wu.test.formula.long <- function(formula, data = parent.frame, ...) {
+.wu.test.formula.long <- function(formula, data = parent.frame(), ...) {
     formula[[3L]][[1L]] <- as.name("+")
     formula[[3L]][[2L]][[1L]] <- as.name("+")
 
@@ -214,7 +214,7 @@ wu.test.formula <- function(formula, data = parent.frame(), ...) {
     ret
 }
 
-.wu.test.formula.wide <- function(formula, data = parent.frame, ...) {
+.wu.test.formula.wide <- function(formula, data = parent.frame(), ...) {
     if (!is.null(data)) {
         tf <- stats::terms(formula, data = data)
         mf <- stats::model.frame(tf, data = data)
