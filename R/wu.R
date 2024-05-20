@@ -81,7 +81,7 @@ wu.test.default <- function(x, y, models, subjects, ...) {
         y <- matrix(unlist(split(c(y), subjects)), ncol = k, byrow = TRUE)
 
         # Make sure y is consistent for each subject
-        if (any(apply(y, 1, diff, simplify = T) != 0L)) {
+        if (any(apply(y, 1, \(s) length(unique(s)), simplify = T) != 1L)) {
             stop("'y' must not differ within levels of 'subjects'")
         }
         # Remove unecessary data from y and convert to a vector ...
@@ -438,4 +438,11 @@ coronary.disease.wide <- do.call(rbind, apply(coronary.disease.tabulated, 1, \(r
                T3 = rep(r["T3"], r["Freq"]))
 }))
 
+coronary.disease.long <- cbind(coronary.disease.wide,
+                               sample = factor(1L:dim(coronary.disease.wide)[1L])) |>
+ reshape(idvar = c('sample', 'D'),
+         direction = 'long',
+         varying = c('T1', 'T2', 'T3'),
+         v.names='x',
+         timevar='model')
 
