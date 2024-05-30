@@ -332,12 +332,12 @@ multiclass.wu.statistic.default <- function(x, y, correct = F, ...) {
 
       row.idx <- which(y==level)
 
-      m1 <- x[row.idx, 1L]
+      m1 <- (x[row.idx, 1L] == level) |> factor(levels=c(T,F))
 
       for (i in 2L:q) {
-        m2 <- x[row.idx, i]
+        m2 <- (x[row.idx, i] == level) |> factor(levels=c(T,F))
         for (j in 2L:q) {
-          m3 <- x[row.idx, j]
+          m3 <- (x[row.idx, j] == level) |> factor(levels=c(T,F))
 
           tb <- table(m1, m2, m3) + ifelse(correct, 0.0001, 0)
 
@@ -398,11 +398,11 @@ multiclass.wu.statistic.xtabs <- function(xt, correct = F, ...) {
 
       row.idx <- which(y==level)
 
-      m1 <- X[row.idx, 1L]
+      m1 <- (X[row.idx, 1L] == level) |> factor(levels=c(T,F))
       for (i in 2L:q) {
-        m2 <- X[row.idx, i]
+        m2 <- (X[row.idx, i] == level) |> factor(levels=c(T,F))
         for (j in 2L:q) {
-          m3 <- X[row.idx, j]
+          m3 <- (X[row.idx, j] == level) |> factor(levels=c(T,F))
           sub.xt <- stats::xtabs(freq[row.idx] ~ m1 + m2 + m3)
 
           type.i[k] <- sub.xt[1L, 2L, 2L] + ifelse(correct, 0.0001, 0)
