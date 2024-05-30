@@ -36,7 +36,7 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
         # Calculate the test statistic for each fold
         folds <- as.factor(folds)
         s <- 1L:length(y)
-        wu.stats <- aggregate(s~folds, data=parent.frame(), FUN=\(idx, ...){
+        wu.stats <- stats::aggregate(s~folds, data=parent.frame(), FUN=\(idx, ...){
           wu.test(x = x[idx,],
                   y = y[idx])['statistic']
         })
@@ -64,7 +64,7 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
         # Aggregate the models by folds & subjects
         # For each combination of fold+subject, there should be the same number
         # of models -- if this is different for any of the strata, throw an error
-        if (any(diff(aggregate(models~folds+subjects,
+        if (any(diff(stats::aggregate(models~folds+subjects,
                                \(.x) unique(length(.x)),
                                data=parent.frame())$models) != 0L)){
              stop("There must be exactly one prediction from each model for each subject within a fold.")
@@ -72,8 +72,8 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
 
         # There should be the same number of subjects for each model in each fold.
         # Unsure if this second check is actually necessary ...
-        if (any(aggregate(subjects~folds,
-                          data=aggregate(subjects~models+folds,
+        if (any(stats::aggregate(subjects~folds,
+                          data=stats::aggregate(subjects~models+folds,
                                          FUN=\(.x) .x |> unique() |> length()),
                           FUN=\(.y) any(diff(.y) != 0L))$subjects)){
              stop("There must be exactly one prediction from each model for each subject within a fold.")
@@ -87,7 +87,7 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
         # Calculate the test statistic for each fold
         folds <- as.factor(folds)
         s <- 1L:length(y)
-        wu.stats <- aggregate(s~folds, data=data.frame(s=s, folds=folds), FUN=\(idx, ...){
+        wu.stats <- stats::aggregate(s~folds, data=data.frame(s=s, folds=folds), FUN=\(idx, ...){
           as.numeric(
             wu.test(x = x[idx],
                   y = y[idx],
