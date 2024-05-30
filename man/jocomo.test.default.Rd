@@ -7,8 +7,22 @@
 \method{jocomo.test}{default}(x, y, subjects, models, folds)
 }
 \arguments{
-\item{folds}{}
+\item{x}{TODO}
+
+\item{y}{TODO}
+
+\item{subjects}{TODO}
+
+\item{models}{TODO}
+
+\item{folds}{TODO}
+}
+\value{
+TODO
 }
 \description{
 Title
+}
+\examples{
+'TODO'
 }

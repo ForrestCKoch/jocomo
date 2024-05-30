@@ -7,8 +7,16 @@
 \method{jocomo.test}{xtabs}(xt, data = parent.frame())
 }
 \arguments{
-\item{data}{}
+\item{xt}{TODO}
+
+\item{data}{TODO}
+}
+\value{
+TODO
 }
 \description{
 Title
+}
+\examples{
+'TODO'
 }

@@ -59,6 +59,10 @@ while the remaining dimensions refer to the model predictions.}
 \description{
 An implementation of Wu's test from Wu 2023 (doi: 10.1080/10543406.2022.2065500)
 
+Title
+
+Title
+
 An implementation of the extended McNemar statistic from Wu 2023 (doi: 10.1080/10543406.2022.2065500)
 }
 \details{

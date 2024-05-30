@@ -2,16 +2,16 @@ jocomo.test <- function(...) UseMethod("jocomo.test")
 
 #' Title
 #'
-#' @param x
-#' @param y
-#' @param subjects
-#' @param models
-#' @param folds
+#' @param x TODO
+#' @param y TODO
+#' @param subjects TODO
+#' @param models TODO
+#' @param folds TODO
 #'
-#' @return
+#' @return TODO
 #' @export
-#'
 #' @examples
+#' 'TODO'
 jocomo.test.default <- function(x, y, subjects, models, folds) {
 
 
@@ -116,13 +116,12 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
 
 #' Title
 #'
-#' @param formula
-#' @param data
-#'
-#' @return
+#' @param formula TODO
+#' @param data TODO
+#' @return TODO
 #' @export
-#'
 #' @examples
+#' 'TODO'
 jocomo.test.formula <- function(formula, data=parent.frame()) {}
 
 .jocomo.test.formula.long <- function(formula, data){}
@@ -133,13 +132,12 @@ jocomo.test.formula <- function(formula, data=parent.frame()) {}
 
 #' Title
 #'
-#' @param xt
-#' @param data
-#'
-#' @return
+#' @param xt TODO
+#' @param data TODO
+#' @return TODO
 #' @export
-#'
 #' @examples
+#' 'TODO'
 jocomo.test.xtabs <- function(xt, data=parent.frame()) {}
 
 

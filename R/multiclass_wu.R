@@ -5,6 +5,8 @@
 #' @export
 multiclass.wu.test <- function(...) UseMethod("multiclass.wu.test")
 
+#' Title
+#'
 #' @param x Can be either a `matrix`, `data.frame`, or `vector` of model predictions.
 #' As a `matrix` or `data.frame`, `x` should be a \eqn{p*q} `matrix` of binary
 #' predictions with \eqn{p} subjects as rows and \eqn{q} models as columns. If
@@ -119,6 +121,8 @@ multiclass.wu.test.default <- function(x, y, models, subjects, ...) {
                    data.name = DNAME), class = "htest")
 }
 
+#' Title
+#'
 #' @param formula A two-sided formula object describing predictions across
 #' multiple models and subjects. Formulas may be specified in either wide, long,
 #' or cross-tabulated format. Refer to 'Details' for more information regarding
@@ -257,6 +261,8 @@ multiclass.wu.test.formula <- function(formula, data = parent.frame(), ...) {
     ret
 }
 
+#' Title
+#'
 #' @param xt An `xtabs` object of 3 or more dimensions indicating the
 #' cross-tabulation of model predictions and true labels. Each factor must have
 #' the same number of levels. The first dimension should refer to the true labels
@@ -300,6 +306,9 @@ multiclass.wu.test.xtabs <- function(xt, ...) {
 #' @export
 multiclass.wu.statistic <- function(...) UseMethod("multiclass.wu.statistic")
 
+#' Title
+#'
+#' @inheritParams multiclass.wu.statistic
 #' @param x An object which can be coerced to a `matrix` of size \eqn{p*q} where
 #' \eqn{p} is the number of subjects and \eqn{q} is the number of models.
 #' The data should consist of two  or more levels.
@@ -351,6 +360,9 @@ multiclass.wu.statistic.default <- function(x, y, correct = F, ...) {
 }
 
 
+#' Title
+#'
+#' @inheritParams multiclass.wu.statistic
 #' @param xt An `xtabs` object of 3 or more dimensions indicating the
 #' cross-tabulation of model predictions and true labels. Each factor must have
 #' exactly two levels. The first dimension should refer to the true labels

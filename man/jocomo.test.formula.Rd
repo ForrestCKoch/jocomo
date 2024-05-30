@@ -7,8 +7,16 @@
 \method{jocomo.test}{formula}(formula, data = parent.frame())
 }
 \arguments{
-\item{data}{}
+\item{formula}{TODO}
+
+\item{data}{TODO}
+}
+\value{
+TODO
 }
 \description{
 Title
+}
+\examples{
+'TODO'
 }
