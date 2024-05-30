@@ -104,7 +104,7 @@ multiclass.wu.test.default <- function(x, y, models, subjects, ...) {
         stop("'x' must have the same levels as 'y'")
     }
 
-    STATISTIC <- multiclass.wu.statistic(x = x, y = y)
+    STATISTIC <- jocomo::multiclass.wu.statistic(x = x, y = y)
     PARAMETER <- nlevels(y) * (dim(x)[2L] - 1L)
     PVAL <- stats::pchisq(STATISTIC, df = PARAMETER, lower.tail = FALSE)
 
@@ -209,7 +209,7 @@ multiclass.wu.test.formula <- function(formula, data = parent.frame(), ...) {
     models <- mf[, 3L]
     subjects <- mf[, 4L]
 
-    ret <- multiclass.wu.test(x = x, y = y, models = models, subjects = subjects, ...)
+    ret <- jocomo::multiclass.wu.test(x = x, y = y, models = models, subjects = subjects, ...)
     ret$data.name <- DNAME
     ret
 }
@@ -233,7 +233,7 @@ multiclass.wu.test.formula <- function(formula, data = parent.frame(), ...) {
     y <- mf[, 1L]
     x <- mf[, -1L]
 
-    ret <- multiclass.wu.test(x = x, y = y, ...)
+    ret <- jocomo::multiclass.wu.test(x = x, y = y, ...)
     ret$data.name <- DNAME
     ret
 }
@@ -252,7 +252,7 @@ multiclass.wu.test.formula <- function(formula, data = parent.frame(), ...) {
     nmf <- names(mf)
     DNAME <- paste0(paste0(names(mf)[1L:(length(nmf) - 1L)], collapse = ", "), ", and ", nmf[length(nmf)])
 
-    ret <- multiclass.wu.test(xt)
+    ret <- jocomo::multiclass.wu.test(xt)
     ret$data.name <- DNAME
     ret
 }
@@ -282,7 +282,7 @@ multiclass.wu.test.xtabs <- function(xt, ...) {
     # If x is a matrix then we don't need to do much
     DNAME <- paste0(deparse(substitute(xt)))
 
-    STATISTIC <- multiclass.wu.statistic(xt = xt, ...)
+    STATISTIC <- jocomo::multiclass.wu.statistic(xt = xt, ...)
     PARAMETER <- dim(xt)[1] * (length(dim(xt)) - 2L)
     PVAL <- stats::pchisq(STATISTIC, df = PARAMETER, lower.tail = FALSE)
 

@@ -37,7 +37,7 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
         folds <- as.factor(folds)
         s <- 1L:length(y)
         wu.stats <- stats::aggregate(s~folds, data=parent.frame(), FUN=\(idx, ...){
-          multiclass.wu.test(x = x[idx,],
+          jocomo::multiclass.wu.test(x = x[idx,],
                   y = y[idx])['statistic']
         })
     } else {
@@ -89,7 +89,7 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
         s <- 1L:length(y)
         wu.stats <- stats::aggregate(s~folds, data=data.frame(s=s, folds=folds), FUN=\(idx, ...){
           as.numeric(
-            multiclass.wu.test(x = x[idx],
+            jocomo::multiclass.wu.test(x = x[idx],
                   y = y[idx],
                   subjects = factor(subjects[idx]),
                   models = factor(models[idx]))['statistic'])

@@ -104,7 +104,7 @@ wu.test.default <- function(x, y, models, subjects, ...) {
         stop("'x' must have the same levels as 'y'")
     }
 
-    STATISTIC <- wu.statistic(x = x, y = y)
+    STATISTIC <- jocomo::wu.statistic(x = x, y = y)
     PARAMETER <- 2L * (dim(x)[2L] - 1L)
     PVAL <- stats::pchisq(STATISTIC, df = PARAMETER, lower.tail = FALSE)
 
@@ -209,7 +209,7 @@ wu.test.formula <- function(formula, data = parent.frame(), ...) {
     models <- mf[, 3L]
     subjects <- mf[, 4L]
 
-    ret <- wu.test(x = x, y = y, models = models, subjects = subjects, ...)
+    ret <- jocomo::wu.test(x = x, y = y, models = models, subjects = subjects, ...)
     ret$data.name <- DNAME
     ret
 }
@@ -252,7 +252,7 @@ wu.test.formula <- function(formula, data = parent.frame(), ...) {
     nmf <- names(mf)
     DNAME <- paste0(paste0(names(mf)[1L:(length(nmf) - 1L)], collapse = ", "), ", and ", nmf[length(nmf)])
 
-    ret <- wu.test(xt)
+    ret <- jocomo::wu.test(xt)
     ret$data.name <- DNAME
     ret
 }
@@ -282,7 +282,7 @@ wu.test.xtabs <- function(xt, ...) {
     # If x is a matrix then we don't need to do much
     DNAME <- paste0(deparse(substitute(xt)))
 
-    STATISTIC <- wu.statistic(xt = xt, ...)
+    STATISTIC <- jocomo::wu.statistic(xt = xt, ...)
     PARAMETER <- 2L * (length(dim(xt)) - 2L)
     PVAL <- stats::pchisq(STATISTIC, df = PARAMETER, lower.tail = FALSE)
 
