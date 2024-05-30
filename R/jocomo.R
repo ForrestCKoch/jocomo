@@ -37,7 +37,7 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
         folds <- as.factor(folds)
         s <- 1L:length(y)
         wu.stats <- stats::aggregate(s~folds, data=parent.frame(), FUN=\(idx, ...){
-          wu.test(x = x[idx,],
+          multiclass.wu.test(x = x[idx,],
                   y = y[idx])['statistic']
         })
     } else {
@@ -89,7 +89,7 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
         s <- 1L:length(y)
         wu.stats <- stats::aggregate(s~folds, data=data.frame(s=s, folds=folds), FUN=\(idx, ...){
           as.numeric(
-            wu.test(x = x[idx],
+            multiclass.wu.test(x = x[idx],
                   y = y[idx],
                   subjects = factor(subjects[idx]),
                   models = factor(models[idx]))['statistic'])
@@ -100,7 +100,7 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
     j <- as.numeric(nlevels(as.factor(folds)))
     k <- as.numeric(nlevels(as.factor(models)))
     STATISTIC <- as.numeric(sum(wu.stats['s']))
-    PARAMETER <- 2L * j * (k - 1L)
+    PARAMETER <- nlevels(y) * j * (k - 1L)
     PVAL <- stats::pchisq(STATISTIC, df = PARAMETER, lower.tail = FALSE)
 
     ## <FIXME split.matrix>
