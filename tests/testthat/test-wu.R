@@ -156,16 +156,16 @@ test_that("test wu.test.default: data is ordered factor, x is matrix", {
   expect_equal(wu.test.out$data.name, "x and y")
 })
 
-test_that("test wu.test.default: data is logical, x is vector, models and subjects are factors", {
+test_that("test wu.test.default: data is logical, x is vector, models and samples are factors", {
   test.data <- get.test.data.1()
   suppressMessages(attach(test.data, warn.conflicts = FALSE))
   models <- factor(col(x))
-  subjects <- factor(row(x))
+  samples <- factor(row(x))
   y <- rep(y, dim(x)[2])
   x <- c(x)
 
 
-  wu.test.out <- wu.test(x, y, models = models, subjects = subjects)
+  wu.test.out <- wu.test(x, y, models = models, samples = samples)
 
   # expect_invisible(wu.test.default(x, y))
   expect_length(wu.test.out, 5)
@@ -174,19 +174,19 @@ test_that("test wu.test.default: data is logical, x is vector, models and subjec
   expect_equal(wu.test.out$parameter, df)
   expect_equal(wu.test.out$p.value, pvalue)
   expect_equal(wu.test.out$method, method)
-  expect_equal(wu.test.out$data.name, "x, y, models, and subjects")
+  expect_equal(wu.test.out$data.name, "x, y, models, and samples")
 })
 
-test_that("test wu.test.default: data is logical, x is vector, models and subjects are characters", {
+test_that("test wu.test.default: data is logical, x is vector, models and samples are characters", {
   test.data <- get.test.data.1()
   suppressMessages(attach(test.data, warn.conflicts = FALSE))
   models <- factor(col(x)) |> as.character()
-  subjects <- factor(row(x)) |> as.character()
+  samples <- factor(row(x)) |> as.character()
   y <- rep(y, dim(x)[2])
   x <- c(x)
 
 
-  wu.test.out <- wu.test(x, y, models = models, subjects = subjects)
+  wu.test.out <- wu.test(x, y, models = models, samples = samples)
 
   # expect_invisible(wu.test.default(x, y))
   expect_length(wu.test.out, 5)
@@ -195,7 +195,7 @@ test_that("test wu.test.default: data is logical, x is vector, models and subjec
   expect_equal(wu.test.out$parameter, df)
   expect_equal(wu.test.out$p.value, pvalue)
   expect_equal(wu.test.out$method, method)
-  expect_equal(wu.test.out$data.name, "x, y, models, and subjects")
+  expect_equal(wu.test.out$data.name, "x, y, models, and samples")
 })
 
 #########################
@@ -319,7 +319,7 @@ test_that("test .wu.test.formula.wide: data is attached logical data.frame, wu.t
 # Long format formula
 #########################
 
-test_that("test .wu.test.formula.long: data.frame, y/x are logical, models and subjects are factors", {
+test_that("test .wu.test.formula.long: data.frame, y/x are logical, models and samples are factors", {
   test.data <- get.test.data.1()
   # suppressMessages(attach(test.data, warn.conflicts = FALSE))
 
@@ -327,11 +327,11 @@ test_that("test .wu.test.formula.long: data.frame, y/x are logical, models and s
     x = c(test.data$x),
     y = rep(test.data$y, dim(test.data$x)[2]),
     models = factor(col(test.data$x)),
-    subjects = factor(row(test.data$x))
+    samples = factor(row(test.data$x))
   )
 
 
-  wu.test.out <- wu.test(y ~ x:models | subjects, data = test.df)
+  wu.test.out <- wu.test(y ~ x:models | samples, data = test.df)
 
   # expect_invisible(wu.test.default(x, y))
   expect_length(wu.test.out, 5)
@@ -340,7 +340,7 @@ test_that("test .wu.test.formula.long: data.frame, y/x are logical, models and s
   expect_equal(wu.test.out$parameter, df)
   expect_equal(wu.test.out$p.value, pvalue)
   expect_equal(wu.test.out$method, method)
-  expect_equal(wu.test.out$data.name, "y, x, models, and subjects")
+  expect_equal(wu.test.out$data.name, "y, x, models, and samples")
 })
 
 ###########################
@@ -462,7 +462,7 @@ test_that("test coronary.disease.wide: formula", {
 test_that("test coronary.disease.long: default", {
   wu.test.out <- wu.test(x=coronary.disease.long$x,
                          y=coronary.disease.long$D,
-                         subjects=coronary.disease.long$sample,
+                         samples=coronary.disease.long$sample,
                          models=coronary.disease.long$model)
 
   statistic <- 811.3

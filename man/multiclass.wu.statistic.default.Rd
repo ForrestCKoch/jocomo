@@ -8,7 +8,7 @@
 }
 \arguments{
 \item{x}{An object which can be coerced to a `matrix` of size \eqn{p*q} where
-\eqn{p} is the number of subjects and \eqn{q} is the number of models.
+\eqn{p} is the number of samples and \eqn{q} is the number of models.
 The data should consist of two  or more levels.}
 
 \item{y}{A `vector` of length \eqn{p} where

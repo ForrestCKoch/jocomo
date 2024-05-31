@@ -14,6 +14,6 @@ get.test.data <- function(){
 
   #.test.data <- .test.data[sample.int(dim(.test.data)[1]),]
   rownames(.test.data) <- NULL
-  colnames(.test.data) <- c("y", "subjects", "models", "x", "folds")
-  .test.data[order(.test.data$subjects%%53),]
+  colnames(.test.data) <- c("y", "samples", "models", "x", "groups")
+  .test.data[order(.test.data$samples%%53),]
 }

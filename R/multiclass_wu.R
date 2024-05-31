@@ -9,9 +9,9 @@ multiclass.wu.test <- function(...) UseMethod("multiclass.wu.test")
 #'
 #' @param x Can be either a `matrix`, `data.frame`, or `vector` of model predictions.
 #' As a `matrix` or `data.frame`, `x` should be a \eqn{p*q} `matrix` of binary
-#' predictions with \eqn{p} subjects as rows and \eqn{q} models as columns. If
+#' predictions with \eqn{p} samples as rows and \eqn{q} models as columns. If
 #' `x` is a `vector`, it should have length \eqn{p*q} and both `models` and
-#' `subjects` must be specified. The data must be able to be coerced to a `factor`
+#' `samples` must be specified. The data must be able to be coerced to a `factor`
 #' with two or more levels. Ignored if a formula is specified.
 #' @param y If `x` is a `matrix` or `data.frame`, then `y` must be a `vector` of
 #' length \eqn{p} indicating positive and negative cases. If `x` is a `vector`,
@@ -21,13 +21,13 @@ multiclass.wu.test <- function(...) UseMethod("multiclass.wu.test")
 #' @param models A `vector` of length \eqn{p*q} indicating which model the datum
 #' corresponds to. This should have \eqn{q} levels each occurring exactly \eqn{p}
 #' times. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.
-#' @param subjects A `vector` of length \eqn{p*q} indicating which subject the datum
+#' @param samples A `vector` of length \eqn{p*q} indicating which subject the datum
 #' corresponds to. This should have \eqn{p} levels each occurring exactly \eqn{q}
 #' times. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.
 #' @rdname multiclass.wu.test
 #' @method multiclass.wu.test default
 #' @exportS3Method jocomo::multiclass.wu.test default
-multiclass.wu.test.default <- function(x, y, models, subjects, ...) {
+multiclass.wu.test.default <- function(x, y, models, samples, ...) {
     # The following code is adapted from stats::friedman.test
 
     # If x is a matrix then we don't need to do much
@@ -39,7 +39,7 @@ multiclass.wu.test.default <- function(x, y, models, subjects, ...) {
         }
 
         models <- factor(c(col(x)))
-        subjects <- factor(c(row(x)))
+        samples <- factor(c(row(x)))
 
         if (any(diff(c(length(y), dim(x)[1L]))) != 0L) {
             stop("Number of rows in x does not match length of y")
@@ -48,12 +48,12 @@ multiclass.wu.test.default <- function(x, y, models, subjects, ...) {
         k <- nlevels(models)
     } else {
         # Make sure none of the subject/model entries are NA
-        if (anyNA(subjects) || anyNA(models)) {
-            stop("NA's are not allowed in 'models' or 'subjects'")
+        if (anyNA(samples) || anyNA(models)) {
+            stop("NA's are not allowed in 'models' or 'samples'")
         }
         # Make sure everything is the same length
-        if (any(diff(c(length(y), length(models), length(subjects), length(x))) != 0L)) {
-            stop("'x', 'y', 'models' and 'subjects' must have the same length")
+        if (any(diff(c(length(y), length(models), length(samples), length(x))) != 0L)) {
+            stop("'x', 'y', 'models' and 'samples' must have the same length")
         }
         DNAME <- paste(deparse(substitute(x)),
                           ", ",
@@ -61,37 +61,37 @@ multiclass.wu.test.default <- function(x, y, models, subjects, ...) {
                           ", ",
                           deparse(substitute(models)),
                           ", and ",
-                          deparse(substitute(subjects)),
+                          deparse(substitute(samples)),
                        sep = "")
         # Make sure we have complete data
-        if (any(c(table(models, subjects)) == 0L)) {
+        if (any(c(table(models, samples)) == 0L)) {
             stop("There must be exactly one prediction from each model for each subject.  At least one is missing")
         }
-        if (any(c(table(models, subjects)) > 1L)) {
+        if (any(c(table(models, samples)) > 1L)) {
             stop("There must be exactly one prediction from each model for each subject.  At least one is duplicated")
         }
 
         models <- factor(models)
-        subjects <- factor(subjects)
+        samples <- factor(samples)
         ## Need to ensure consistent order of observations within blocks.
-        o <- order(models, subjects)
+        o <- order(models, samples)
         y <- y[o]
         x <- x[o]
         models <- models[o]
-        subjects <- subjects[o]
+        samples <- samples[o]
         k <- nlevels(models)
-        y <- matrix(unlist(split(c(y), subjects)), ncol = k, byrow = TRUE)
+        y <- matrix(unlist(split(c(y), samples)), ncol = k, byrow = TRUE)
 
         # Make sure y is consistent for each subject
         if (any(apply(y, 1L, \(s) length(unique(s)), simplify = T) != 1L)) {
-            stop("'y' must not differ within levels of 'subjects'")
+            stop("'y' must not differ within levels of 'samples'")
         }
         # Remove unecessary data from y and convert to a vector ...
         y <- as.vector(y[, 1L])
     }
 
     ## <FIXME split.matrix> -- From friedman.test??
-    x <- matrix(unlist(split(c(x), subjects)), ncol = k, byrow = TRUE)
+    x <- matrix(unlist(split(c(x), samples)), ncol = k, byrow = TRUE)
     to.keep <- stats::complete.cases(x) & stats::complete.cases(y)
     y <- y[to.keep]  # We only need the first column as it should not change
     x <- x[to.keep, ]
@@ -124,7 +124,7 @@ multiclass.wu.test.default <- function(x, y, models, subjects, ...) {
 #' Title
 #'
 #' @param formula A two-sided formula object describing predictions across
-#' multiple models and subjects. Formulas may be specified in either wide, long,
+#' multiple models and samples. Formulas may be specified in either wide, long,
 #' or cross-tabulated format. Refer to 'Details' for more information regarding
 #' formula specification.
 #' @param data an optional data frame containing the variables named in formula.
@@ -211,9 +211,9 @@ multiclass.wu.test.formula <- function(formula, data = parent.frame(), ...) {
     y <- mf[, 1L]
     x <- mf[, 2L]
     models <- mf[, 3L]
-    subjects <- mf[, 4L]
+    samples <- mf[, 4L]
 
-    ret <- jocomo::multiclass.wu.test(x = x, y = y, models = models, subjects = subjects, ...)
+    ret <- jocomo::multiclass.wu.test(x = x, y = y, models = models, samples = samples, ...)
     ret$data.name <- DNAME
     ret
 }
@@ -310,7 +310,7 @@ multiclass.wu.statistic <- function(...) UseMethod("multiclass.wu.statistic")
 #'
 #' @inheritParams multiclass.wu.statistic
 #' @param x An object which can be coerced to a `matrix` of size \eqn{p*q} where
-#' \eqn{p} is the number of subjects and \eqn{q} is the number of models.
+#' \eqn{p} is the number of samples and \eqn{q} is the number of models.
 #' The data should consist of two  or more levels.
 #' @param y A `vector` of length \eqn{p} where
 #' The data should consist of two or more levels.

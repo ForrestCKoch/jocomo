@@ -10,7 +10,7 @@
 \usage{
 wu.test(...)
 
-\method{wu.test}{default}(x, y, models, subjects, ...)
+\method{wu.test}{default}(x, y, models, samples, ...)
 
 \method{wu.test}{formula}(formula, data = parent.frame(), ...)
 
@@ -23,9 +23,9 @@ wu.statistic(...)
 
 \item{x}{Can be either a `matrix`, `data.frame`, or `vector` of model predictions.
 As a `matrix` or `data.frame`, `x` should be a \eqn{p*q} `matrix` of binary
-predictions with \eqn{p} subjects as rows and \eqn{q} models as columns. If
+predictions with \eqn{p} samples as rows and \eqn{q} models as columns. If
 `x` is a `vector`, it should have length \eqn{p*q} and both `models` and
-`subjects` must be specified. The data must be able to be coerced to a `factor`
+`samples` must be specified. The data must be able to be coerced to a `factor`
 with two levels. Ignored if a formula is specified.}
 
 \item{y}{If `x` is a `matrix` or `data.frame`, then `y` must be a `vector` of
@@ -38,12 +38,12 @@ specified.}
 corresponds to. This should have \eqn{q} levels each occurring exactly \eqn{p}
 times. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.}
 
-\item{subjects}{A `vector` of length \eqn{p*q} indicating which subject the datum
+\item{samples}{A `vector` of length \eqn{p*q} indicating which subject the datum
 corresponds to. This should have \eqn{p} levels each occurring exactly \eqn{q}
 times. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.}
 
 \item{formula}{A two-sided formula object describing predictions across
-multiple models and subjects. Formulas may be specified in either wide, long,
+multiple models and samples. Formulas may be specified in either wide, long,
 or cross-tabulated format. Refer to 'Details' for more information regarding
 formula specification.}
 

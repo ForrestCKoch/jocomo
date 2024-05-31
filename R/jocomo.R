@@ -4,29 +4,29 @@ jocomo.test <- function(...) UseMethod("jocomo.test")
 #'
 #' @param x TODO
 #' @param y TODO
-#' @param subjects TODO
+#' @param samples TODO
 #' @param models TODO
-#' @param folds TODO
+#' @param groups TODO
 #'
 #' @return TODO
 #' @export
 #' @examples
 #' 'TODO'
-jocomo.test.default <- function(x, y, subjects, models, folds) {
+jocomo.test.default <- function(x, y, samples, models, groups) {
 
 
 
     if (is.matrix(x) || is.data.frame(x)) {
         DNAME <- paste0(deparse(substitute(x)), ", ",
                         deparse(substitute(y)), ", and ",
-                        deparse(substitute(folds)))
+                        deparse(substitute(groups)))
 
         if (!is.matrix(x)) {
             x <- as.matrix(x)
         }
 
         models <- factor(c(col(x)))
-        subjects <- factor(c(row(x)))
+        samples <- factor(c(row(x)))
 
         if (any(diff(c(length(y), dim(x)[1L]))) != 0L) {
             stop("Number of rows in x does not match length of y")
@@ -34,20 +34,20 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
 
 
         # Calculate the test statistic for each fold
-        folds <- as.factor(folds)
+        groups <- as.factor(groups)
         s <- 1L:length(y)
-        wu.stats <- stats::aggregate(s~folds, data=parent.frame(), FUN=\(idx, ...){
+        wu.stats <- stats::aggregate(s~groups, data=parent.frame(), FUN=\(idx, ...){
           jocomo::multiclass.wu.test(x = x[idx,],
                   y = y[idx])['statistic']
         })
     } else {
         # Make sure none of the subject/model entries are NA
-        if (anyNA(subjects) || anyNA(models)) {
-            stop("NA's are not allowed in 'models' or 'subjects'")
+        if (anyNA(samples) || anyNA(models)) {
+            stop("NA's are not allowed in 'models' or 'samples'")
         }
         # Make sure everything is the same length
-        if (any(diff(c(length(y), length(models), length(subjects), length(x), length(folds))) != 0L)) {
-            stop("'x', 'y', 'models', 'subjects', and 'folds' must have the same length")
+        if (any(diff(c(length(y), length(models), length(samples), length(x), length(groups))) != 0L)) {
+            stop("'x', 'y', 'models', 'samples', and 'groups' must have the same length")
         }
         DNAME <- paste(deparse(substitute(x)),
                           ", ",
@@ -55,42 +55,42 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
                           ", ",
                           deparse(substitute(models)),
                           ", ",
-                          deparse(substitute(subjects)),
+                          deparse(substitute(samples)),
                           ", and ",
-                          deparse(substitute(folds)),
+                          deparse(substitute(groups)),
                        sep = "")
 
         # Make sure we have complete data
-        # Aggregate the models by folds & subjects
+        # Aggregate the models by groups & samples
         # For each combination of fold+subject, there should be the same number
         # of models -- if this is different for any of the strata, throw an error
-        if (any(diff(stats::aggregate(models~folds+subjects,
+        if (any(diff(stats::aggregate(models~groups+samples,
                                \(.x) unique(length(.x)),
                                data=parent.frame())$models) != 0L)){
              stop("There must be exactly one prediction from each model for each subject within a fold.")
         }
 
-        # There should be the same number of subjects for each model in each fold.
+        # There should be the same number of samples for each model in each fold.
         # Unsure if this second check is actually necessary ...
-        if (any(stats::aggregate(subjects~folds,
-                          data=stats::aggregate(subjects~models+folds,
+        if (any(stats::aggregate(samples~groups,
+                          data=stats::aggregate(samples~models+groups,
                                          FUN=\(.x) .x |> unique() |> length()),
-                          FUN=\(.y) any(diff(.y) != 0L))$subjects)){
+                          FUN=\(.y) any(diff(.y) != 0L))$samples)){
              stop("There must be exactly one prediction from each model for each subject within a fold.")
         }
 
         # Make sure y is consistent for each subject
-        if (any(sapply(split(c(y), subjects), \(.x) length(unique(.x))) != 1L)) {
-            stop("'y' must not differ within levels of 'subjects'")
+        if (any(sapply(split(c(y), samples), \(.x) length(unique(.x))) != 1L)) {
+            stop("'y' must not differ within levels of 'samples'")
         }
 
         # Calculate the test statistic for each fold
-        folds <- as.factor(folds)
+        groups <- as.factor(groups)
         s <- 1L:length(y)
-        wu.stats <- stats::aggregate(result~folds, data=data.frame(result=s, folds=folds), FUN=\(idx, ...){
+        wu.stats <- stats::aggregate(result~groups, data=data.frame(result=s, groups=groups), FUN=\(idx, ...){
             mc.wu <- jocomo::multiclass.wu.test(x = x[idx],
                   y = y[idx],
-                  subjects = factor(subjects[idx]),
+                  samples = factor(samples[idx]),
                   models = factor(models[idx]))
             stat <- mc.wu[['statistic']] |> as.numeric()
             df <- mc.wu[['parameter']] |> as.numeric()
@@ -99,7 +99,7 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
     }
 
     #return(wu.stats)
-    #j <- as.numeric(nlevels(as.factor(folds)))
+    #j <- as.numeric(nlevels(as.factor(groups)))
     #k <- as.numeric(nlevels(as.factor(models)))
     STATISTIC <- sum(wu.stats[['result']][,'statistic'])#as.numeric(sum(wu.stats['s']))
     PARAMETER <- sum(wu.stats[['result']][,'parameter'])#nlevels(y) * j * (k - 1L)

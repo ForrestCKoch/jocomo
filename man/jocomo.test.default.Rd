@@ -4,18 +4,18 @@
 \alias{jocomo.test.default}
 \title{Title}
 \usage{
-\method{jocomo.test}{default}(x, y, subjects, models, folds)
+\method{jocomo.test}{default}(x, y, samples, models, groups)
 }
 \arguments{
 \item{x}{TODO}
 
 \item{y}{TODO}
 
-\item{subjects}{TODO}
+\item{samples}{TODO}
 
 \item{models}{TODO}
 
-\item{folds}{TODO}
+\item{groups}{TODO}
 }
 \value{
 TODO
