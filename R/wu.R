@@ -294,7 +294,11 @@ wu.test.xtabs <- function(xt, ...) {
     names(STATISTIC) <- "Wu chi-squared"
     names(PARAMETER) <- "df"
 
-    structure(list(statistic = STATISTIC, parameter = PARAMETER, p.value = PVAL, method = "Wu's test", data.name = DNAME), class = "htest")
+    structure(list(statistic = STATISTIC,
+                   parameter = PARAMETER,
+                   p.value = PVAL,
+                   method = "Wu's test",
+                   data.name = DNAME), class = "htest")
 }
 
 #' An implementation of the extended McNemar statistic from Wu 2023 (doi: 10.1080/10543406.2022.2065500)
