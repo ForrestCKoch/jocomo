@@ -87,20 +87,22 @@ jocomo.test.default <- function(x, y, subjects, models, folds) {
         # Calculate the test statistic for each fold
         folds <- as.factor(folds)
         s <- 1L:length(y)
-        wu.stats <- stats::aggregate(s~folds, data=data.frame(s=s, folds=folds), FUN=\(idx, ...){
-          as.numeric(
-            jocomo::multiclass.wu.test(x = x[idx],
+        wu.stats <- stats::aggregate(result~folds, data=data.frame(result=s, folds=folds), FUN=\(idx, ...){
+            mc.wu <- jocomo::multiclass.wu.test(x = x[idx],
                   y = y[idx],
                   subjects = factor(subjects[idx]),
-                  models = factor(models[idx]))['statistic'])
+                  models = factor(models[idx]))
+            stat <- mc.wu[['statistic']] |> as.numeric()
+            df <- mc.wu[['parameter']] |> as.numeric()
+            c(statistic=stat, parameter=df)
         })
     }
 
     #return(wu.stats)
-    j <- as.numeric(nlevels(as.factor(folds)))
-    k <- as.numeric(nlevels(as.factor(models)))
-    STATISTIC <- as.numeric(sum(wu.stats['s']))
-    PARAMETER <- nlevels(y) * j * (k - 1L)
+    #j <- as.numeric(nlevels(as.factor(folds)))
+    #k <- as.numeric(nlevels(as.factor(models)))
+    STATISTIC <- sum(wu.stats[['result']][,'statistic'])#as.numeric(sum(wu.stats['s']))
+    PARAMETER <- sum(wu.stats[['result']][,'parameter'])#nlevels(y) * j * (k - 1L)
     PVAL <- stats::pchisq(STATISTIC, df = PARAMETER, lower.tail = FALSE)
 
     ## <FIXME split.matrix>
