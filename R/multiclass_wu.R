@@ -101,7 +101,7 @@ multiclass.wu.test.default <- function(x, y, models, samples, ...) {
     if (nlevels(y) < 2L) {
         stop("'y' must have 2 or more levels")
     }
-    x <- structure(factor(x, levels = levels(y)), dim = dim(x), class = c("matrix", "factor"))
+    x <- structure(factor(x, levels = levels(y)), dim = dim(x), class = c("factor", "matrix", "array"))
     if (any(is.na(x))) {
         stop("'x' must have the same levels as 'y'")
     }
