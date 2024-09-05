@@ -1,4 +1,4 @@
-jocomo.test <- function(...) UseMethod("jocomo.test")
+jocomo.chisq.test <- function(...) UseMethod("jocomo.chisq.test")
 
 #' Title
 #'
@@ -12,7 +12,7 @@ jocomo.test <- function(...) UseMethod("jocomo.test")
 #' @export
 #' @examples
 #' 'TODO'
-jocomo.test.default <- function(x, y, samples, models, groups) {
+jocomo.chisq.test.default <- function(x, y, samples, models, groups) {
 
 
 
@@ -112,7 +112,7 @@ jocomo.test.default <- function(x, y, samples, models, groups) {
     structure(list(statistic = STATISTIC,
                    parameter = PARAMETER,
                    p.value = PVAL,
-                   method = "Joint Comparison of Multiple Models",
+                   method = "Chi-squared Test for the Joint Comparison of Multiple Models",
                    data.name = DNAME), class = "htest")
 }
 
@@ -124,13 +124,13 @@ jocomo.test.default <- function(x, y, samples, models, groups) {
 #' @export
 #' @examples
 #' 'TODO'
-jocomo.test.formula <- function(formula, data=parent.frame()) {}
+jocomo.chisq.test.formula <- function(formula, data=parent.frame()) {}
 
-.jocomo.test.formula.long <- function(formula, data){}
+.jocomo.chisq.test.formula.long <- function(formula, data){}
 
-.jocomo.test.formula.wide <- function(formula, data){}
+.jocomo.chisq.test.formula.wide <- function(formula, data){}
 
-.jocomo.test.formula.xtabs <- function(formula, data){}
+.jocomo.chisq.test.formula.xtabs <- function(formula, data){}
 
 #' Title
 #'
@@ -140,6 +140,6 @@ jocomo.test.formula <- function(formula, data=parent.frame()) {}
 #' @export
 #' @examples
 #' 'TODO'
-jocomo.test.xtabs <- function(xt, data=parent.frame()) {}
+jocomo.chisq.test.xtabs <- function(xt, data=parent.frame()) {}
 
 
