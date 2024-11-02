@@ -27,7 +27,7 @@ multiclass.wu.test <- function(...) UseMethod("multiclass.wu.test")
 #' @rdname multiclass.wu.test
 #' @method multiclass.wu.test default
 #' @exportS3Method jocomo::multiclass.wu.test default
-multiclass.wu.test.default <- function(x, y, models, samples, ...) {
+multiclass.wu.test.default <- function(x, y, models, samples, correct = F, warn = getOption("warn"), ...) {
     # The following code is adapted from stats::friedman.test
 
     # If x is a matrix then we don't need to do much
@@ -102,11 +102,12 @@ multiclass.wu.test.default <- function(x, y, models, samples, ...) {
         stop("'y' must have 2 or more levels")
     }
     x <- structure(factor(x, levels = levels(y)), dim = dim(x), class = c("factor", "matrix", "array"))
-    if (any(is.na(x))) {
-        stop("'x' must have the same levels as 'y'")
+    if (any(is.na(x)) & warn) {
+        warning("'x' does not have the same levels as 'y'")
     }
 
-    STATISTIC <- jocomo::multiclass.wu.statistic(x = x, y = y)
+    #STATISTIC <- jocomo::multiclass.wu.statistic(x = x, y = y)
+    STATISTIC <- multiclass.wu.statistic(x = x, y = y, correct = correct)
     PARAMETER <- nlevels(y) * (dim(x)[2L] - 1L)
     PVAL <- stats::pchisq(STATISTIC, df = PARAMETER, lower.tail = FALSE)
 
@@ -339,7 +340,7 @@ multiclass.wu.statistic.default <- function(x, y, correct = F, ...) {
         for (j in 2L:q) {
           m3 <- (x[row.idx, j] == level) |> factor(levels=c(T,F))
 
-          tb <- table(m1, m2, m3) + ifelse(correct, 0.0001, 0)
+          tb <- table(m1, m2, m3) + ifelse(correct, runif(1,1/1e4,5/1e4), 0)
 
           type.i[k] <- tb[1L, 2L, 2L]
           type.ii[k] <- tb[2L, 1L, 1L]
@@ -405,8 +406,8 @@ multiclass.wu.statistic.xtabs <- function(xt, correct = F, ...) {
           m3 <- (X[row.idx, j] == level) |> factor(levels=c(T,F))
           sub.xt <- stats::xtabs(freq[row.idx] ~ m1 + m2 + m3)
 
-          type.i[k] <- sub.xt[1L, 2L, 2L] + ifelse(correct, 0.0001, 0)
-          type.ii[k] <- sub.xt[2L, 1L, 1L] + ifelse(correct, 0.0001, 0)
+          type.i[k] <- sub.xt[1L, 2L, 2L] + ifelse(correct, runif(1,1/1e4,5/1e4), 0)# ifelse(correct, 0.0001, 0)
+          type.ii[k] <- sub.xt[2L, 1L, 1L] + ifelse(correct, runif(1,1/1e4,5/1e4), 0)# ifelse(correct, 0.0001, 0)
 
           k <- k + 1L
         }
