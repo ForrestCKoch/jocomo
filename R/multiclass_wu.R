@@ -340,7 +340,7 @@ multiclass.wu.statistic.default <- function(x, y, correct = F, ...) {
         for (j in 2L:q) {
           m3 <- (x[row.idx, j] == level) |> factor(levels=c(T,F))
 
-          tb <- table(m1, m2, m3) + ifelse(correct, runif(1,1/1e4,5/1e4), 0)
+          tb <- table(m1, m2, m3) + ifelse(correct, stats::runif(1,1/1e4,5/1e4), 0)
 
           type.i[k] <- tb[1L, 2L, 2L]
           type.ii[k] <- tb[2L, 1L, 1L]
@@ -406,8 +406,8 @@ multiclass.wu.statistic.xtabs <- function(xt, correct = F, ...) {
           m3 <- (X[row.idx, j] == level) |> factor(levels=c(T,F))
           sub.xt <- stats::xtabs(freq[row.idx] ~ m1 + m2 + m3)
 
-          type.i[k] <- sub.xt[1L, 2L, 2L] + ifelse(correct, runif(1,1/1e4,5/1e4), 0)# ifelse(correct, 0.0001, 0)
-          type.ii[k] <- sub.xt[2L, 1L, 1L] + ifelse(correct, runif(1,1/1e4,5/1e4), 0)# ifelse(correct, 0.0001, 0)
+          type.i[k] <- sub.xt[1L, 2L, 2L] + ifelse(correct, stats::runif(1,1/1e4,5/1e4), 0)# ifelse(correct, 0.0001, 0)
+          type.ii[k] <- sub.xt[2L, 1L, 1L] + ifelse(correct, stats::runif(1,1/1e4,5/1e4), 0)# ifelse(correct, 0.0001, 0)
 
           k <- k + 1L
         }

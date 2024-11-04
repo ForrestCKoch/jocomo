@@ -1,4 +1,4 @@
-#' TODO
+#' Title
 #'
 #' @param ... Additional arguments passed on to methods.
 #' @rdname jocomo.chisq.test
@@ -17,6 +17,7 @@ jocomo.chisq.test <- function(...) UseMethod("jocomo.chisq.test")
 #' @rdname jocomo.chisq.test
 #' @examples
 #' 'TODO'
+#' @method jocomo.chisq.test default
 #' @exportS3Method jocomo::jocomo.chisq.test default
 jocomo.chisq.test.default <- function(x, y, samples, models, groups, correct = F, warn = getOption("warn"), ...) {
 
@@ -299,8 +300,8 @@ jocomo.chisq.test.xtabs <- function(xt, data=parent.frame()) {
           m3 <- (X[row.idx, j] == level) |> factor(levels=c(T,F))
           sub.xt <- stats::xtabs(freq[row.idx] ~ m1 + m2 + m3)
 
-          type.i[k] <- sub.xt[1L, 2L, 2L] + ifelse(correct, runif(1,1/1e4,5/1e4), 0)# ifelse(correct, 0.0001, 0)
-          type.ii[k] <- sub.xt[2L, 1L, 1L] + ifelse(correct, runif(1,1/1e4,5/1e4), 0)# ifelse(correct, 0.0001, 0)
+          type.i[k] <- sub.xt[1L, 2L, 2L] + ifelse(correct, stats::runif(1,1/1e4,5/1e4), 0)# ifelse(correct, 0.0001, 0)
+          type.ii[k] <- sub.xt[2L, 1L, 1L] + ifelse(correct, stats::runif(1,1/1e4,5/1e4), 0)# ifelse(correct, 0.0001, 0)
 
           k <- k + 1L
         }

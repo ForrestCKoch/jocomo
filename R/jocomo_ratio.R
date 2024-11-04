@@ -74,7 +74,7 @@ jocomo.ratio.test.formula <- function(formula, data=parent.frame()) {}
   DF2 <- within.groups[['parameter']]
 
   STATISTIC <- (X1 * DF2) / (X2 * DF1)
-  PVAL <- pf(STATISTIC, DF1, DF2, lower.tail = FALSE)
+  PVAL <- stats::pf(STATISTIC, DF1, DF2, lower.tail = FALSE)
   PARAMETER <- c(df1 = DF1, df2 = DF2)
   names(STATISTIC) <- "F-statistic"
   names(PARAMETER) <- c("df1", "df2")
