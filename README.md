@@ -20,13 +20,8 @@ devtools::install_github("https://github.com/ForrestCKoch/jocomo.git")
   
 - An implementation of Wu's test which allows for two or more classes in provided by `jocomo::multiclass.wu.test`.  This interface is complete and follows the same convention as `jocomo::wu.test`.
 
-# Planned Features
+- The implementation of Wu's test allowing for two or more classes and blocking factors is a work in progress, and is provided by `jocomo::jocomo.chisq.test`. Currently only wide and long format interfaces are available with formula and frequency table interfaces to come soon!
 
-TODO
-
-# Example usage
-
-TODO
 
 # Background Theory
 

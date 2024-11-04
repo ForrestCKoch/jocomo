@@ -10,7 +10,15 @@
 \usage{
 multiclass.wu.test(...)
 
-\method{multiclass.wu.test}{default}(x, y, models, samples, ...)
+\method{multiclass.wu.test}{default}(
+  x,
+  y,
+  models,
+  samples,
+  correct = F,
+  warn = getOption("warn"),
+  ...
+)
 
 \method{multiclass.wu.test}{formula}(formula, data = parent.frame(), ...)
 
