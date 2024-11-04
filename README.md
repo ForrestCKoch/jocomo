@@ -1,8 +1,34 @@
 # *Disclaimer*
 *This package is still in alpha. A few of the planned interfaces are still a work in progress, and further tests will be written to ensure code robustness.*
 
-# Overview
+# Installation
 
+JoCoMo is not yet available on CRAN. In the meantime it can be installed with
+
+```
+devtools::install_github("https://github.com/ForrestCKoch/jocomo.git")
+```
+
+# Current Features
+- An implementation of Wu's test is provided by `jocomo::wu.test`. Data may be provided in:
+  - wide format: `jocomo::wu.test(x, y, models, samples)` where `x` is a matrix
+  - long format: `jocomo::wu.test(x, y, models, samples)` where `x` is a vector
+  - frequency table format: `jocomo::wu.test(xt)` where `xt` is an `xtabs` object
+  - wide formula: `jocomo::wu.test(outcome~m1 + m2 + m3 + ., data=DF)` where the `outcome` is the true class, the RHS contains the model predictions, and `DF` contains one row per sample.
+  - long formula: `jocomo::wu.test(outcome~pred:model|sample, data=DF)` where `outcome` is the true class, `pred` contains the model predictions, `model` is a factor for the models, `sample` is a factor of samples, and `DF` contains one row for each prediction.
+  - frequency table formula: `jocomo::wu.test(Freq~m1 + m2 + . || outcome, data=DF)` where `Freq` is the frequency count, `outcome` is the true class, and the remaining terms are the model predictions. `DF` should have 1 row for each possible combination of `outcome`, `m1`, `m2`, ... The output of converting `xtabs` to a `data.frame` should suffice.
+  
+- An implementation of Wu's test which allows for two or more classes in provided by `jocomo::multiclass.wu.test`.  This interface is complete and follows the same convention as `jocomo::wu.test`.
+
+# Planned Features
+
+TODO
+
+# Example usage
+
+TODO
+
+# Background Theory
 
 ## Background Theory: McNemar's Test (McNemar 1947)
 
