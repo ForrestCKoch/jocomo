@@ -357,7 +357,7 @@ multiclass.wu.statistic.default <- function(x, y, correct = F, ...) {
 
       statistic <- statistic + ( t(a) %*% solve(A) %*% a )
     }
-  statistic
+  statistic |> as.numeric()
 }
 
 
@@ -420,5 +420,5 @@ multiclass.wu.statistic.xtabs <- function(xt, correct = F, ...) {
 
       statistic <- statistic + ( t(a) %*% solve(A) %*% a )
     }
-  statistic
+  statistic |> as.numeric()
 }

@@ -43,10 +43,13 @@ jocomo.chisq.test.default <- function(x, y, samples, models, groups, correct = F
         # Calculate the test statistic for each fold
         groups <- as.factor(groups)
         s <- 1L:length(y)
-        wu.stats <- stats::aggregate(s~groups, data=parent.frame(), FUN=\(idx, ...){
-          jocomo::multiclass.wu.test(x = x[idx,],
-                  y = y[idx], correct = correct, warn = warn)['statistic']
-        })
+        wu.stats <- stats::aggregate(result~groups, data=data.frame(result=s, groups=groups), FUN=\(idx, ...){
+            mc.wu <- jocomo::multiclass.wu.test(x = x[idx,],
+                  y = y[idx], correct = correct, warn = warn)
+            stat <- mc.wu[['statistic']] |> as.numeric()
+            df <- mc.wu[['parameter']] |> as.numeric()
+            c(statistic=stat, parameter=df)
+        })['result']
     } else {
         # Make sure none of the subject/model entries are NA
         if (anyNA(samples) || anyNA(models)) {
@@ -138,7 +141,6 @@ jocomo.chisq.test.default <- function(x, y, samples, models, groups, correct = F
 #' 'TODO'
 #' @exportS3Method jocomo::jocomo.chisq.test formula
 jocomo.chisq.test.formula <- function(formula, data=parent.frame(), ...) {
-    stop("Not Implemented")
     # Sanity checks
     if (missing(formula)) {
         stop("formula missing")
@@ -147,12 +149,14 @@ jocomo.chisq.test.formula <- function(formula, data=parent.frame(), ...) {
         stop("incorrect specification for 'formula'")
     }
 
-    long.formula <- F
+    df.formula <- F
     xtabs.formula <- F
+    long.formula <- F
+    wide.formula <- F
     if (typeof(formula[[3L]]) == as.name("language")) {
         if (formula[[3L]][[1L]] != as.name("+")) {
             if (formula[[3L]][[1L]] == as.name("|")) {
-                long.formula <- T
+                df.formula <- T
             }
             if (formula[[3L]][[1L]] == as.name("||")) {
                 xtabs.formula <- T
@@ -161,35 +165,43 @@ jocomo.chisq.test.formula <- function(formula, data=parent.frame(), ...) {
     }
 
     # This formula follows the long format specification if so, formula should be in the format of y~x:model|subject|group
-    if (long.formula) {
+    if (df.formula) {
         if ((typeof(formula[[3L]][[1L]]) != as.name("symbol")) || (typeof(formula[[3L]][[2L]]) != as.name("language")) || (length(formula[[3L]][[2L]]) !=
             3L) || (typeof(formula[[3L]][[3L]]) != as.name("symbol"))) {
             stop("Incorrect specification for 'formula'")
         }
 
-        if ((formula[[3L]][[2L]][[1L]]) != as.name("|") || formula[[3L]][[1L]] != as.name("|") ||
-             length(formula[[3L]][[2L]][[2L]]) != 3) {
+        if ((formula[[3L]][[2L]][[1L]]) != as.name("|") || formula[[3L]][[1L]] != as.name("|")){
             stop("Incorrect specification for 'formula'")
         }
 
-        if (length(formula[[3L]][[2L]][[2L]][[1L]]) != as.name(':')) {
+        if (length(formula[[3L]][[2L]][[2L]]) != 3){
+            wide.formula <- T
+        }else if (formula[[3L]][[2L]][[2L]][[1L]] == as.name('+')) {
+            wide.formula <- T
+        }else if (formula[[3L]][[2L]][[2L]][[1L]] == as.name(':')) {
+            long.formula <- T
+        }else{
             stop("Incorrect specification for 'formula'")
         }
+    }
 
+    if(long.formula){
         # More error checking should go here to check for correct format ...
         return(.jocomo.chisq.test.formula.long(formula = formula, data = data, ...))
     } else if (xtabs.formula) {
-
         # More error checking should go here to check for correct format ...
         return(.jocomo.chisq.test.formula.xtabs(formula = formula, data = data, ...))
-    } else {
+    } else if(wide.formula) {
         # Is it save to assume this is wide format?  I'm not sure, but for now I will ...
-        return(.jocomo.chisq.formula.wide(formula = formula, data = data, ...))
+        return(.jocomo.chisq.test.formula.wide(formula = formula, data = data, ...))
+    }else{
+        stop("Error: unsupported formula")
     }
 }
 
 .jocomo.chisq.test.formula.long <- function(formula, data, ...){
-    stop("Not Implemented")
+    #stop("Not Implemented")
     formula[[3L]][[1L]] <- as.name("+")
     formula[[3L]][[2L]][[1L]] <- as.name("+")
     formula[[3L]][[2L]][[2L]][[1L]] <- as.name("+")
@@ -208,8 +220,8 @@ jocomo.chisq.test.formula <- function(formula, data=parent.frame(), ...) {
     y <- mf[, 1L]
     x <- mf[, 2L]
     models <- mf[, 3L]
-    groups <- mf[, 4L]
-    samples <- mf[, 5L]
+    samples <- mf[, 4L]
+    groups <- mf[, 5L]
 
     ret <- jocomo::jocomo.chisq.test(x = x,
                                      y = y,
@@ -221,7 +233,43 @@ jocomo.chisq.test.formula <- function(formula, data=parent.frame(), ...) {
 }
 
 .jocomo.chisq.test.formula.wide <- function(formula, data, ...){
-    stop("Not Implemented")
+    #stop("Not Implemented")
+    formula[[3L]][[1L]] <- as.name("+")
+    formula[[3L]][[2L]][[1L]] <- as.name("+")
+
+    label.var <- formula[[2L]] |> as.character()
+    sample.var <- formula[[3L]][[2L]][[3L]] |> as.character()
+    group.var <- formula[[3L]][[3L]] |> as.character()
+
+    if (!is.null(data)) {
+        tf <- stats::terms(formula, data = data)
+        mf <- stats::model.frame(tf, data = data)
+    } else {
+        tf <- stats::terms(formula)
+        mf <- stats::model.frame(tf)
+    }
+
+    nmf <- names(mf)
+    if (length(nmf) == 2L) {
+        DNAME <- paste0(nmf, collapse = " and ")
+    } else {
+        DNAME <- paste0(paste0(nmf[1L:(length(nmf) - 1L)], collapse = ", "), ", and ", nmf[length(nmf)])
+    }
+
+    y <- mf[[label.var]]
+    #x <- mf[, -c(1L, dim(mf)[2L]-1L, dim(mf)[[2L]])]
+    x <- subset(mf, select=setdiff(names(mf), c(label.var, sample.var, group.var)))
+    samples <- mf[[sample.var]]
+    groups <- mf[[group.var]]
+
+    # samples <- mf[, c(dim(mf)[2L]-1L)]
+    # groups <- mf[, c(dim(mf)[2L])]
+
+    ret <- jocomo::jocomo.chisq.test(x = x, y = y,
+                                     samples = samples, groups = groups,
+                                     models = NULL, ...)
+    ret$data.name <- DNAME
+    ret
 }
 
 .jocomo.chisq.test.formula.xtabs <- function(formula, data, ...){
