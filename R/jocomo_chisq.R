@@ -1,17 +1,34 @@
-#' Title
+#' An extended version of Wu's Test allowing for more than 2 classes or datasets.
 #'
 #' @param ... Additional arguments passed on to methods.
 #' @rdname jocomo.chisq.test
 #' @export
 jocomo.chisq.test <- function(...) UseMethod("jocomo.chisq.test")
 
-#' Title
+#' An extended version of Wu's Test allowing for more than 2 classes or datasets.
 #'
-#' @param x TODO
-#' @param y TODO
-#' @param samples TODO
-#' @param models TODO
-#' @param groups TODO
+#' @inheritParams jocomo.chisq.test
+#' @param x Can be either a `matrix`, `data.frame`, or `vector` of model predictions.
+#' As a `matrix` or `data.frame`, `x` should be a \eqn{p*q} `matrix` of binary
+#' predictions with \eqn{p} samples as rows and \eqn{q} models as columns. If
+#' `x` is a `vector`, it should have length \eqn{p*q} and both `models` and
+#' `samples` must be specified. The data must be able to be coerced to a `factor`
+#' with two or more levels. Ignored if a formula is specified.
+#' @param y If `x` is a `matrix` or `data.frame`, then `y` must be a `vector` of
+#' length \eqn{p} indicating positive and negative cases. If `x` is a `vector`,
+#' then `y` must be a `vector` of length \eqn{p*q}. The data must be able to be
+#' coerced to a `factor` with the same levels as `x`. Ignored if a formula is
+#' specified.
+#' @param samples A `vector` of length \eqn{p*q} indicating which subject the datum
+#' corresponds to. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.
+#' @param models A `vector` of length \eqn{p*q} indicating which model the datum
+#' corresponds to. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.
+#' @param group A `vector` of length \eqn{p*q} indicating which strata the datum
+#' corresponds to. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.
+#' @param correct A boolean value indicating whether adjustments should be made
+#' acount for empty cells in the contingency tables (required if any cells would be 0)
+#' @param warn A boolean value indicating whether to issue warnings when data appears
+#' incorretly structured.
 #'
 #' @return TODO
 #' @rdname jocomo.chisq.test
@@ -304,14 +321,19 @@ jocomo.chisq.test.formula <- function(formula, data=parent.frame(), ...) {
 
 #' Title
 #'
-#' @param xt TODO
-#' @param data TODO
+#' @inheritParams jocomo.chisq.test.default
+#' @param xt An `xtabs` object of 3 or more dimensions indicating the
+#' cross-tabulation of model predictions and true labels. Each factor must have
+#' the same number of levels. The first dimension should refer to the true labels
+#' while the remaining dimensions refer to the model predictions.
+#' @param correct A boolean value indicating whether adjustments should be made
+#' acount for empty cells in the contingency tables (required if any cells would be 0)
 #' @return TODO
 #' @rdname jocomo.chisq.test
 #' @examples
 #' 'TODO'
 #' @exportS3Method jocomo::jocomo.chisq.test xtabs
-jocomo.chisq.test.xtabs <- function(xt, data=parent.frame()) {
+jocomo.chisq.test.xtabs <- function(xt, correct=FALSE, ...) {
     stop("Not Implemented")
     if (any(diff(dim(xt)) != 0L)) {
         stop("All factors of xt must have the same number of levels.")

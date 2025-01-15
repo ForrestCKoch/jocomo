@@ -13,6 +13,7 @@ jocomo.ratio.test <- function(...) UseMethod("jocomo.ratio.test")
 #' @examples
 #' 'TODO'
 jocomo.ratio.test.default <- function(x, y, samples, models, groups) {
+  stop("This function is not supported")
 
     if (is.matrix(x) || is.data.frame(x)) {
 
@@ -57,13 +58,22 @@ jocomo.ratio.test.default <- function(x, y, samples, models, groups) {
 #' @export
 #' @examples
 #' 'TODO'
-jocomo.ratio.test.formula <- function(formula, data=parent.frame()) {}
+jocomo.ratio.test.formula <- function(formula, data=parent.frame()) {
+  stop("This function is not supported")
+}
 
-.jocomo.ratio.test.formula.long <- function(formula, data){}
+.jocomo.ratio.test.formula.long <- function(formula, data){
+  stop("This function is not supported")
+}
 
-.jocomo.ratio.test.formula.wide <- function(formula, data){}
+.jocomo.ratio.test.formula.wide <- function(formula, data){
+  stop("This function is not supported")
+}
 
-.jocomo.ratio.test.formula.xtabs <- function(formula, data){}
+.jocomo.ratio.test.formula.xtabs <- function(formula, data){
+  stop("This function is not supported")
+}
+
 
 .combine.chisq <- function(between.groups, within.groups, data.name){
   # Used to combine the two "directions" of jocomo.chisq into a ratio statistic
@@ -95,5 +105,7 @@ jocomo.ratio.test.formula <- function(formula, data=parent.frame()) {}
 #' @export
 #' @examples
 #' 'TODO'
-jocomo.ratio.test.xtabs <- function(xt, data=parent.frame()) {}
+jocomo.ratio.test.xtabs <- function(xt, data=parent.frame()) {
+  stop("This function is not supported")
+}
 

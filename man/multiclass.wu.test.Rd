@@ -50,6 +50,10 @@ times. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.}
 corresponds to. This should have \eqn{p} levels each occurring exactly \eqn{q}
 times. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.}
 
+\item{correct}{TODO}
+
+\item{warn}{TODO}
+
 \item{formula}{A two-sided formula object describing predictions across
 multiple models and samples. Formulas may be specified in either wide, long,
 or cross-tabulated format. Refer to 'Details' for more information regarding

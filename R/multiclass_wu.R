@@ -1,4 +1,4 @@
-#' An extended version of Wu's Test allowing for multiclasses
+#' An extended version of Wu's Test allowing for more than 2 classes
 #'
 #' @param ... Additional arguments passed on to methods.
 #' @rdname multiclass.wu.test
@@ -24,6 +24,10 @@ multiclass.wu.test <- function(...) UseMethod("multiclass.wu.test")
 #' @param samples A `vector` of length \eqn{p*q} indicating which subject the datum
 #' corresponds to. This should have \eqn{p} levels each occurring exactly \eqn{q}
 #' times. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.
+#' @param correct A boolean value indicating whether adjustments should be made
+#' acount for empty cells in the contingency tables (required if any cells would be 0)
+#' @param warn A boolean value indicating whether to issue warnings when data appears
+#' incorretly structured.
 #' @rdname multiclass.wu.test
 #' @method multiclass.wu.test default
 #' @exportS3Method jocomo::multiclass.wu.test default
@@ -315,7 +319,7 @@ multiclass.wu.statistic <- function(...) UseMethod("multiclass.wu.statistic")
 #' The data should consist of two  or more levels.
 #' @param y A `vector` of length \eqn{p} where
 #' The data should consist of two or more levels.
-#' @param correct Add 0.5 to each cell of the 2x2 contingency table to adjust for 0 counts
+#' @param correct Adds a small value to each cell of the 2x2 contingency table to adjust for 0 counts
 #' @export
 multiclass.wu.statistic.default <- function(x, y, correct = F, ...) {
     #x <- structure(x == max(x), dim = dim(x), class = c("matrix", "logical"))
@@ -368,7 +372,7 @@ multiclass.wu.statistic.default <- function(x, y, correct = F, ...) {
 #' cross-tabulation of model predictions and true labels. Each factor must have
 #' exactly two levels. The first dimension should refer to the true labels
 #' while the remaining dimensions refer to the model predictions.
-#' @param correct Add 0.5 to each cell of the 2x2 contingency table to adjust for 0 counts
+#' @param correct Adds a small value to each cell of the 2x2 contingency table to adjust for 0 counts
 #' @export
 multiclass.wu.statistic.xtabs <- function(xt, correct = F, ...) {
     if (any(diff(dim(xt)) != 0L)) {

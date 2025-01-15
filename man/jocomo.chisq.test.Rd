@@ -22,10 +22,10 @@ jocomo.chisq.test(...)
 
 \method{jocomo.chisq.test}{formula}(formula, data = parent.frame(), ...)
 
-\method{jocomo.chisq.test}{xtabs}(xt, data = parent.frame())
+\method{jocomo.chisq.test}{xtabs}(xt, data = parent.frame(), correct = FALSE, ...)
 }
 \arguments{
-\item{...}{Additional arguments passed on to methods.}
+\item{...}{TODO}
 
 \item{x}{TODO}
 
@@ -36,6 +36,10 @@ jocomo.chisq.test(...)
 \item{models}{TODO}
 
 \item{groups}{TODO}
+
+\item{correct}{TODO}
+
+\item{warn}{TODO}
 
 \item{formula}{TODO}
 
