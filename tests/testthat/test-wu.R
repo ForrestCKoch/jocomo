@@ -22,6 +22,15 @@ get.test.data.1 <- function() {
   list(x = x, y = y, statistic = statistic, pvalue = pvalue, df = df, method = "Wu's test")
 }
 
+test_that("Wu statistic validates model count and singular tables", {
+  x <- matrix(FALSE, nrow = 2L, ncol = 1L)
+  y <- c(FALSE, TRUE)
+
+  expect_error(wu.statistic(x, y), "at least 2 models")
+  expect_error(wu.statistic(matrix(FALSE, nrow = 2L, ncol = 2L), y), "singular")
+  expect_type(wu.statistic(matrix(FALSE, nrow = 2L, ncol = 2L), y, correct = TRUE), "double")
+})
+
 ####################
 # No Formula
 ####################

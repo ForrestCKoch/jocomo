@@ -39,18 +39,21 @@ wu.test.default <- function(x, y, models, samples, ...) {
         models <- factor(c(col(x)))
         samples <- factor(c(row(x)))
 
-        if (any(diff(c(length(y), dim(x)[1L]))) != 0L) {
+        if (length(y) != nrow(x)) {
             stop("Number of rows in x does not match length of y")
         }
 
         k <- nlevels(models)
+        if (k < 2L) {
+            stop("'x' must contain predictions from at least 2 models")
+        }
     } else {
         # Make sure none of the subject/model entries are NA
         if (anyNA(samples) || anyNA(models)) {
             stop("NA's are not allowed in 'models' or 'samples'")
         }
         # Make sure everything is the same length
-        if (any(diff(c(length(y), length(models), length(samples), length(x))) != 0L)) {
+        if (!all(lengths(list(x, y, models, samples)) == length(x))) {
             stop("'x', 'y', 'models' and 'samples' must have the same length")
         }
         DNAME <- paste(deparse(substitute(x)),
@@ -81,7 +84,7 @@ wu.test.default <- function(x, y, models, samples, ...) {
         y <- matrix(unlist(split(c(y), samples)), ncol = k, byrow = TRUE)
 
         # Make sure y is consistent for each subject
-        if (any(apply(y, 1L, \(s) length(unique(s)), simplify = T) != 1L)) {
+        if (any(apply(y, 1L, \(s) length(unique(s)), simplify = TRUE) != 1L)) {
             stop("'y' must not differ within levels of 'samples'")
         }
         # Remove unecessary data from y and convert to a vector ...
@@ -95,11 +98,14 @@ wu.test.default <- function(x, y, models, samples, ...) {
     x <- x[to.keep, ]
 
     # Convert everything to factors
-    y <- factor(y, ordered = T)
+    y <- factor(y, ordered = TRUE)
     if (nlevels(y) != 2L) {
         stop("'y' must have exactly 2 levels")
     }
-    x <- structure(factor(x, levels = levels(y), ordered = T), dim = dim(x), class = c("matrix", "ordered", "factor"))
+    if (nrow(x) == 0L || any(table(y) == 0L)) {
+        stop("At least one complete observation is required for each level of 'y'")
+    }
+    x <- structure(factor(x, levels = levels(y), ordered = TRUE), dim = dim(x), class = c("matrix", "ordered", "factor"))
     if (any(is.na(x))) {
         stop("'x' must have the same levels as 'y'")
     }
@@ -158,15 +164,15 @@ wu.test.formula <- function(formula, data = parent.frame(), ...) {
         stop("incorrect specification for 'formula'")
     }
 
-    long.formula <- F
-    xtabs.formula <- F
+    long.formula <- FALSE
+    xtabs.formula <- FALSE
     if (typeof(formula[[3L]]) == as.name("language")) {
         if (formula[[3L]][[1L]] != as.name("+")) {
             if (formula[[3L]][[1L]] == as.name("|")) {
-                long.formula <- T
+                long.formula <- TRUE
             }
             if (formula[[3L]][[1L]] == as.name("||")) {
-                xtabs.formula <- T
+                xtabs.formula <- TRUE
             }
         }
     }
@@ -279,8 +285,8 @@ wu.test.xtabs <- function(xt, ...) {
 
     k <- length(dim(xt)) - 1L
 
-    if (k < 1L) {
-        stop("xt has too few dimensions")
+    if (k < 2L) {
+        stop("xt must contain predictions from at least 2 models")
     }
 
     # If x is a matrix then we don't need to do much
@@ -318,15 +324,30 @@ wu.statistic <- function(...) UseMethod("wu.statistic")
 #' The data should consist of two ordered levels and is coerced into a logical `vector`.
 #' @param correct Add 0.5 to each cell of the 2x2 contingency table to adjust for 0 counts
 #' @export
-wu.statistic.default <- function(x, y, correct = F, ...) {
+wu.statistic.default <- function(x, y, correct = FALSE, ...) {
+    if (length(dim(x)) != 2L) {
+        stop("'x' must be a two-dimensional object")
+    }
+    if (length(y) != nrow(x)) {
+        stop("'y' must have one value for each row of 'x'")
+    }
+    if (length(correct) != 1L || is.na(correct)) {
+        stop("'correct' must be a single non-missing logical value")
+    }
+
     x <- structure(x == max(x), dim = dim(x), class = c("matrix", "logical"))
     y <- y == max(y)
 
-    p <- dim(x)[1L]
     q <- dim(x)[2L]
+    if (q < 2L) {
+        stop("'x' must contain predictions from at least 2 models")
+    }
+    if (anyNA(x) || anyNA(y) || !any(y) || all(y)) {
+        stop("'x' and 'y' must not contain missing values and 'y' must have two levels")
+    }
 
-    x.pred.pos.cases <- x[y, ]
-    x.pred.neg.cases <- x[!y, ]
+    x.pred.pos.cases <- x[y, , drop = FALSE]
+    x.pred.neg.cases <- x[!y, , drop = FALSE]
 
 
     k <- 1L
@@ -369,9 +390,15 @@ wu.statistic.default <- function(x, y, correct = F, ...) {
 
     a <- diag(N10) - diag(N01)
     A <- N10 + N01
+    if (qr(A)$rank < nrow(A)) {
+        stop("The positive-case covariance matrix is singular; use correct = TRUE or provide discordant observations")
+    }
 
     b <- diag(M10) - diag(M01)
     B <- M10 + M01
+    if (qr(B)$rank < nrow(B)) {
+        stop("The negative-case covariance matrix is singular; use correct = TRUE or provide discordant observations")
+    }
 
     as.numeric(t(a) %*% solve(A) %*% a + t(b) %*% solve(B) %*% b)
 }
@@ -386,16 +413,22 @@ wu.statistic.default <- function(x, y, correct = F, ...) {
 #' while the remaining dimensions refer to the model predictions.
 #' @param correct Add 0.5 to each cell of the 2x2 contingency table to adjust for 0 counts
 #' @export
-wu.statistic.xtabs <- function(xt, correct = F, ...) {
+wu.statistic.xtabs <- function(xt, correct = FALSE, ...) {
+    if (!is.table(xt)) {
+        stop("'xt' must be a table or xtabs object")
+    }
     if (any(dim(xt) != 2L)) {
         stop("All factors of xt must have exactly 2 levels.")
+    }
+    if (length(correct) != 1L || is.na(correct)) {
+        stop("'correct' must be a single non-missing logical value")
     }
 
 
     # p <- dim(x)[1]
     q <- length(dim(xt)) - 1L
-    if (q < 1L) {
-        stop("xt has too few dimensions")
+    if (q < 2L) {
+        stop("xt must contain predictions from at least 2 models")
     }
 
     # x.pred.pos.cases <- x[y,] x.pred.neg.cases <- x[!y,]
@@ -432,9 +465,15 @@ wu.statistic.xtabs <- function(xt, correct = F, ...) {
 
     a <- diag(N10) - diag(N01)
     A <- N10 + N01
+    if (qr(A)$rank < nrow(A)) {
+        stop("The positive-case covariance matrix is singular; use correct = TRUE or provide discordant observations")
+    }
 
     b <- diag(M10) - diag(M01)
     B <- M10 + M01
+    if (qr(B)$rank < nrow(B)) {
+        stop("The negative-case covariance matrix is singular; use correct = TRUE or provide discordant observations")
+    }
 
     as.numeric(t(a) %*% solve(A) %*% a + t(b) %*% solve(B) %*% b)
 }

@@ -4,7 +4,7 @@
 \alias{wu.statistic.xtabs}
 \title{Title}
 \usage{
-\method{wu.statistic}{xtabs}(xt, correct = F, ...)
+\method{wu.statistic}{xtabs}(xt, correct = FALSE, ...)
 }
 \arguments{
 \item{xt}{An `xtabs` object of 3 or more dimensions indicating the
