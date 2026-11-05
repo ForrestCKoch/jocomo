@@ -170,11 +170,8 @@ wu.test.formula <- function(formula, data = parent.frame(), ...) {
 }
 
 .wu.test.formula.long <- function(formula, data, ...) {
-    formula[[3L]][[1L]] <- as.name("+")
-    formula[[3L]][[2L]][[1L]] <- as.name("+")
-
-
-    tf <- stats::terms(formula, data = data)
+    normalized_formula <- .jocomo_long_formula(formula)
+    tf <- stats::terms(normalized_formula, data = data)
     mf <- stats::model.frame(tf, data = data)
 
     if (dim(mf)[2L] != 4L) {
@@ -219,14 +216,10 @@ wu.test.formula <- function(formula, data = parent.frame(), ...) {
 }
 
 .wu.test.formula.xtabs <- function(formula, data, ...) {
-    tmp <- formula[[3L]][[2L]]
-    formula[[3L]][[2L]] <- formula[[3L]][[3L]]
-    formula[[3L]][[3L]] <- tmp
-    formula[[3L]][[1L]] <- as.name("+")
+    normalized_formula <- .jocomo_xtabs_formula(formula)
+    xt <- stats::xtabs(formula = normalized_formula, data = data)
 
-    xt <- stats::xtabs(formula = formula, data = data)
-
-    tf <- stats::terms(formula, data = data)
+    tf <- stats::terms(normalized_formula, data = data)
     mf <- stats::model.frame(tf, data = data)
 
     nmf <- names(mf)

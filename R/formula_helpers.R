@@ -46,3 +46,31 @@
         env = environment(formula)
     )
 }
+
+.jocomo_long_formula <- function(formula) {
+    rhs <- formula[[3L]]
+    prediction <- rhs[[2L]][[2L]]
+    model <- rhs[[2L]][[3L]]
+    sample <- rhs[[3L]]
+    normalized_rhs <- call(
+        "+",
+        call("+", prediction, model),
+        sample
+    )
+    .jocomo_formula_with_rhs(formula, normalized_rhs)
+}
+
+.jocomo_xtabs_formula <- function(formula) {
+    rhs <- formula[[3L]]
+    predictions <- .jocomo_plus_terms(rhs[[2L]])
+    if (length(predictions) < 2L &&
+        !identical(predictions[[1L]], as.name("."))) {
+        stop("Cross-tabulated formulas must contain at least 2 model predictions")
+    }
+
+    normalized_rhs <- Reduce(
+        function(left, right) call("+", left, right),
+        c(list(rhs[[3L]]), predictions)
+    )
+    .jocomo_formula_with_rhs(formula, normalized_rhs)
+}
