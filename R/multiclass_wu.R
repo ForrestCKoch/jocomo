@@ -35,7 +35,7 @@ multiclass.wu.test <- function(...) UseMethod("multiclass.wu.test")
 #' @exportS3Method jocomo::multiclass.wu.test default
 multiclass.wu.test.default <- function(x, y, models, samples,
                                        correct = FALSE,
-                                       warn = getOption("warn"), ...) {
+                                       warn = FALSE, ...) {
     # The following code is adapted from stats::friedman.test
 
     # If x is a matrix then we don't need to do much

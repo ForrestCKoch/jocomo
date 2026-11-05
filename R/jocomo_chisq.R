@@ -5,6 +5,53 @@
 #' @export
 jocomo.chisq.test <- function(...) UseMethod("jocomo.chisq.test")
 
+.jocomo_validate_grouped_inputs <- function(x, y, samples, models, groups) {
+    if (!all(lengths(list(x, y, samples, models, groups)) == length(y))) {
+        stop("'x', 'y', 'samples', 'models', and 'groups' must have compatible lengths")
+    }
+    if (anyNA(x) || anyNA(y) || anyNA(samples) ||
+        anyNA(models) || anyNA(groups)) {
+        stop("Grouped test inputs must not contain missing values")
+    }
+
+    y <- factor(y)
+    samples <- factor(samples)
+    models <- factor(models)
+    groups <- factor(groups)
+    if (nlevels(y) < 2L) {
+        stop("Each grouped test requires at least two observed outcome levels")
+    }
+
+    sample_groups <- split(
+        seq_along(x),
+        interaction(groups, samples, drop = TRUE)
+    )
+    complete_cells <- vapply(sample_groups, function(indices) {
+        counts <- table(factor(models[indices], levels = levels(models)))
+        all(counts == 1L)
+    }, logical(1L))
+    if (any(!complete_cells)) {
+        stop("There must be exactly one prediction from each model for each subject within each group")
+    }
+    if (any(vapply(split(y, samples), function(values) {
+        length(unique(values)) != 1L
+    }, logical(1L)))) {
+        stop("'y' must not differ within levels of 'samples'")
+    }
+    if (any(vapply(split(y, groups), function(values) {
+        nlevels(droplevels(values)) < 2L
+    }, logical(1L)))) {
+        stop("Each group must contain at least two observed outcome levels")
+    }
+
+    list(
+        y = y,
+        samples = samples,
+        models = models,
+        groups = groups
+    )
+}
+
 #' An extended version of Wu's Test allowing for more than 2 classes or datasets.
 #'
 #' @inheritParams jocomo.chisq.test
@@ -36,9 +83,15 @@ jocomo.chisq.test <- function(...) UseMethod("jocomo.chisq.test")
 #' 'TODO'
 #' @method jocomo.chisq.test default
 #' @exportS3Method jocomo::jocomo.chisq.test default
-jocomo.chisq.test.default <- function(x, y, samples, models, groups, correct = F, warn = getOption("warn"), ...) {
-
-
+jocomo.chisq.test.default <- function(x, y, samples, models, groups,
+                                      correct = FALSE,
+                                      warn = FALSE, ...) {
+    if (length(warn) != 1L || !is.logical(warn) || is.na(warn)) {
+        stop("'warn' must be a single non-missing logical value")
+    }
+    if (length(correct) != 1L || !is.logical(correct) || is.na(correct)) {
+        stop("'correct' must be a single non-missing logical value")
+    }
 
     if (is.matrix(x) || is.data.frame(x)) {
         DNAME <- paste0(deparse(substitute(x)), ", ",
@@ -48,34 +101,32 @@ jocomo.chisq.test.default <- function(x, y, samples, models, groups, correct = F
         if (!is.matrix(x)) {
             x <- as.matrix(x)
         }
-
-        models <- factor(c(col(x)))
-        samples <- factor(c(row(x)))
-
-        if (any(diff(c(length(y), dim(x)[1L]))) != 0L) {
+        if (length(y) != nrow(x) || length(groups) != nrow(x)) {
             stop("Number of rows in x does not match length of y")
         }
-
-
-        # Calculate the test statistic for each fold
-        groups <- as.factor(groups)
-        s <- 1L:length(y)
-        wu.stats <- stats::aggregate(result~groups, data=data.frame(result=s, groups=groups), FUN=\(idx, ...){
-            mc.wu <- jocomo::multiclass.wu.test(x = x[idx,],
-                  y = y[idx], correct = correct, warn = warn)
+        validation <- .jocomo_validate_grouped_inputs(
+            x = c(x),
+            y = rep(y, ncol(x)),
+            samples = rep(seq_len(nrow(x)), ncol(x)),
+            models = c(col(x)),
+            groups = rep(groups, ncol(x))
+        )
+        groups <- validation$groups
+        s <- seq_len(nrow(x))
+        wu.stats <- stats::aggregate(result ~ groups,
+                                     data = data.frame(result = s, groups),
+                                     FUN = \(idx, ...) {
+            mc.wu <- jocomo::multiclass.wu.test(
+                x = x[idx, , drop = FALSE],
+                y = y[idx],
+                correct = correct,
+                warn = warn
+            )
             stat <- mc.wu[['statistic']] |> as.numeric()
             df <- mc.wu[['parameter']] |> as.numeric()
             c(statistic=stat, parameter=df)
         })['result']
     } else {
-        # Make sure none of the subject/model entries are NA
-        if (anyNA(samples) || anyNA(models)) {
-            stop("NA's are not allowed in 'models' or 'samples'")
-        }
-        # Make sure everything is the same length
-        if (any(diff(c(length(y), length(models), length(samples), length(x), length(groups))) != 0L)) {
-            stop("'x', 'y', 'models', 'samples', and 'groups' must have the same length")
-        }
         DNAME <- paste(deparse(substitute(x)),
                           ", ",
                           deparse(substitute(y)),
@@ -87,41 +138,28 @@ jocomo.chisq.test.default <- function(x, y, samples, models, groups, correct = F
                           deparse(substitute(groups)),
                        sep = "")
 
-        # Make sure we have complete data
-        # Aggregate the models by groups & samples
-        # For each combination of fold+subject, there should be the same number
-        # of models -- if this is different for any of the strata, throw an error
-        # TODO: is this needed?
-        # if (any(diff(stats::aggregate(models~groups+samples,
-        #                        \(.x) unique(length(.x)),
-        #                        data=parent.frame())$models) != 0L)){
-        #      stop("There must be exactly one prediction from each model for each subject within a fold.")
-        # }
-
-        # There should be the same number of samples for each model in each fold.
-        # Unsure if this second check is actually necessary ...
-        if (any(stats::aggregate(samples~groups,
-                          data=stats::aggregate(samples~models+groups,
-                                         FUN=\(.x) .x |> unique() |> length()),
-                          FUN=\(.y) any(diff(.y) != 0L))$samples)){
-             stop("There must be exactly one prediction from each model for each subject within a fold.")
-        }
-
-        # Make sure y is consistent for each subject
-        if (any(sapply(split(c(y), samples), \(.x) length(unique(.x))) != 1L)) {
-            stop("'y' must not differ within levels of 'samples'")
-        }
+        validation <- .jocomo_validate_grouped_inputs(
+            x = x,
+            y = y,
+            samples = samples,
+            models = models,
+            groups = groups
+        )
+        y <- validation$y
+        samples <- validation$samples
+        models <- validation$models
+        groups <- validation$groups
 
         # Calculate the test statistic for each fold
-        groups <- as.factor(groups)
-        s <- 1L:length(y)
-        wu.stats <- stats::aggregate(result~groups, #data=data.frame(result=s, groups=groups), FUN=\(idx, ...){
-                                     data=data.frame(result=s, groups=groups), FUN=\(idx, ...){
-            #mc.wu <- jocomo::multiclass.wu.test(x = x[idx],
-            mc.wu <- multiclass.wu.test(x = x[idx],
+        s <- seq_along(x)
+        wu.stats <- stats::aggregate(result ~ groups,
+                                     data = data.frame(result = s, groups),
+                                     FUN = \(idx, ...) {
+            mc.wu <- jocomo::multiclass.wu.test(
+                  x = x[idx],
                   y = y[idx],
-                  samples = factor(samples[idx]),
-                  models = factor(models[idx]),
+                  samples = droplevels(samples[idx]),
+                  models = droplevels(models[idx]),
                   correct = correct,
                   warn = warn)
             stat <- mc.wu[['statistic']] |> as.numeric()
@@ -386,5 +424,3 @@ jocomo.chisq.test.xtabs <- function(xt, correct=FALSE, ...) {
     }
   statistic
 }
-
-
