@@ -63,7 +63,8 @@
     list(type_i = type_i, type_ii = type_ii)
 }
 
-.multiclass_wu_class_statistic <- function(type_i, type_ii, q, level) {
+.multiclass_wu_class_statistic <- function(type_i, type_ii, q, level,
+                                            allow_singular = FALSE) {
     expected <- (q - 1L)^2L
     if (length(type_i) != expected || length(type_ii) != expected) {
         stop("Invalid multiclass Wu discordance counts")
@@ -74,16 +75,31 @@
     differences <- diag(type_i_matrix) - diag(type_ii_matrix)
     covariance <- type_i_matrix + type_ii_matrix
 
-    if (qr(covariance)$rank < nrow(covariance)) {
+    if (qr(covariance)$rank < nrow(covariance) && !allow_singular) {
         stop(
             "The covariance matrix is singular for class '", level,
             "'; use correct = TRUE or provide discordant observations"
         )
     }
 
-    as.numeric(
-        t(differences) %*% solve(covariance) %*% differences
-    )
+    inverse <- if (qr(covariance)$rank < nrow(covariance)) {
+        .jocomo_symmetric_pseudoinverse(covariance)
+    } else {
+        solve(covariance)
+    }
+    as.numeric(t(differences) %*% inverse %*% differences)
+}
+
+.jocomo_symmetric_pseudoinverse <- function(x, tol = sqrt(.Machine$double.eps)) {
+    decomposition <- eigen(x, symmetric = TRUE)
+    scale <- max(abs(decomposition$values), 1)
+    keep <- abs(decomposition$values) > tol * scale
+    if (!any(keep)) {
+        stop("The covariance matrix has no estimable dimensions")
+    }
+    vectors <- decomposition$vectors[, keep, drop = FALSE]
+    values <- decomposition$values[keep]
+    vectors %*% (t(vectors) / values)
 }
 
 .multiclass_wu_statistic_from_data <- function(x, y, weights = NULL,
@@ -108,7 +124,8 @@
             type_i = counts$type_i,
             type_ii = counts$type_ii,
             q = q,
-            level = level
+            level = level,
+            allow_singular = correct
         )
     }, numeric(1L)))
 }

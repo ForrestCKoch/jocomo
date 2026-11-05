@@ -29,6 +29,10 @@ test_that("Wu statistic validates model count and singular tables", {
   expect_error(wu.statistic(x, y), "at least 2 models")
   expect_error(wu.statistic(matrix(FALSE, nrow = 2L, ncol = 2L), y), "singular")
   expect_type(wu.statistic(matrix(FALSE, nrow = 2L, ncol = 2L), y, correct = TRUE), "double")
+  expect_identical(
+    wu.statistic(matrix(FALSE, nrow = 2L, ncol = 2L), y, correct = TRUE),
+    wu.statistic(matrix(FALSE, nrow = 2L, ncol = 2L), y, correct = TRUE)
+  )
 })
 
 ####################

@@ -355,17 +355,27 @@ wu.statistic.default <- function(x, y, correct = FALSE, ...) {
 
     a <- diag(N10) - diag(N01)
     A <- N10 + N01
-    if (qr(A)$rank < nrow(A)) {
+    if (qr(A)$rank < nrow(A) && !isTRUE(correct)) {
         stop("The positive-case covariance matrix is singular; use correct = TRUE or provide discordant observations")
     }
 
     b <- diag(M10) - diag(M01)
     B <- M10 + M01
-    if (qr(B)$rank < nrow(B)) {
+    if (qr(B)$rank < nrow(B) && !isTRUE(correct)) {
         stop("The negative-case covariance matrix is singular; use correct = TRUE or provide discordant observations")
     }
 
-    as.numeric(t(a) %*% solve(A) %*% a + t(b) %*% solve(B) %*% b)
+    inverse_a <- if (qr(A)$rank < nrow(A)) {
+        .jocomo_symmetric_pseudoinverse(A)
+    } else {
+        solve(A)
+    }
+    inverse_b <- if (qr(B)$rank < nrow(B)) {
+        .jocomo_symmetric_pseudoinverse(B)
+    } else {
+        solve(B)
+    }
+    as.numeric(t(a) %*% inverse_a %*% a + t(b) %*% inverse_b %*% b)
 }
 
 
@@ -430,17 +440,27 @@ wu.statistic.xtabs <- function(xt, correct = FALSE, ...) {
 
     a <- diag(N10) - diag(N01)
     A <- N10 + N01
-    if (qr(A)$rank < nrow(A)) {
+    if (qr(A)$rank < nrow(A) && !isTRUE(correct)) {
         stop("The positive-case covariance matrix is singular; use correct = TRUE or provide discordant observations")
     }
 
     b <- diag(M10) - diag(M01)
     B <- M10 + M01
-    if (qr(B)$rank < nrow(B)) {
+    if (qr(B)$rank < nrow(B) && !isTRUE(correct)) {
         stop("The negative-case covariance matrix is singular; use correct = TRUE or provide discordant observations")
     }
 
-    as.numeric(t(a) %*% solve(A) %*% a + t(b) %*% solve(B) %*% b)
+    inverse_a <- if (qr(A)$rank < nrow(A)) {
+        .jocomo_symmetric_pseudoinverse(A)
+    } else {
+        solve(A)
+    }
+    inverse_b <- if (qr(B)$rank < nrow(B)) {
+        .jocomo_symmetric_pseudoinverse(B)
+    } else {
+        solve(B)
+    }
+    as.numeric(t(a) %*% inverse_a %*% a + t(b) %*% inverse_b %*% b)
 }
 
 coronary.disease.tabulated <- data.frame(

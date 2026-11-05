@@ -54,6 +54,22 @@ test_that("multiclass Wu handles singular tables explicitly", {
   )
 })
 
+test_that("multiclass Wu remains finite for weighted and near-singular tables", {
+  x <- matrix(c(
+    "a", "a", "a", "b", "b", "b",
+    "a", "a", "b", "a", "b", "b",
+    "a", "b", "a", "b", "a", "b"
+  ), nrow = 6L)
+  y <- factor(c("a", "a", "a", "b", "b", "b"))
+  weights <- c(1e12, 1, 1, 1, 1e12, 1)
+
+  expect_true(is.finite(
+    jocomo:::.multiclass_wu_statistic_from_data(
+      x, y, weights = weights, correct = TRUE
+    )
+  ))
+})
+
 test_that("multiclass Wu validates inputs and missing predictions", {
   x <- matrix(c("a", "a", "b", "b", "a", "a", "b", "b"),
               nrow = 4L)
