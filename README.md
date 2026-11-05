@@ -26,11 +26,6 @@ devtools::install_github("https://github.com/ForrestCKoch/jocomo.git")
 
 - The implementation of Wu's test allowing for two or more classes and blocking factors is a work in progress, and is provided by `jocomo::jocomo.chisq.test`. Currently only wide and long format interfaces are available with formula and frequency table interfaces to come soon!
 
-# Known Bugs
-
-- **Grouped statistics can depend on model ordering when `correct = TRUE`.** The grouped compatibility calculation preserves a legacy small random-cell correction, so the sequence of models controls which correction values are assigned to intermediate contingency-table cells. Wide and long inputs therefore need to use the same explicit model order to produce identical results. This regression was identified in [`3d7adf1`](https://github.com/ForrestCKoch/jocomo/commit/3d7adf14c67ee520b895e50e899ab478adbbc6e6), corrected in [`34c2ad3`](https://github.com/ForrestCKoch/jocomo/commit/34c2ad391a066411941db9c441898670e0cdf2c2), and the established grouped statistic contract was restored in [`e6552b8`](https://github.com/ForrestCKoch/jocomo/commit/e6552b82e42dea8a14cda763e2140caac0e9de97). The equivalence regression test now aligns model ordering explicitly in [`4987cd2`](https://github.com/ForrestCKoch/jocomo/commit/4987cd2384976abcf8a7abf8275f21433f85ef39).
-
-
 # Background Theory
 
 ## Background Theory: McNemar's Test (McNemar 1947)
@@ -100,6 +95,12 @@ n^{(J2)}\_{10}+n^{(J2)}\_{01} & n^{(23)}\_{10}+n^{(23)}\_{01} & ... & n^{(JJ)}\_
 - $H\_0: \bigcap\_{d\in D}\Big(\bigcap\_{c\in C} \big[\text{Acc}(T\_1,c,d)=...=\text{Acc}(T\_J,c,d)\big]\Big)$
 - $X^2\_{JCM} = \sum\_{d\in D,c\in C}\big(\sideset{\_{(d)}}{^T\_c}{a}\sideset{\_{(d)}}{^{-1}\_c}{A}\sideset{\_{(d)}}{\_c}{a}\big)$
 - $X^2\_{JCM}\overset{a}\sim\chi^2\_{D\times C\times(J-1)}$
+
+
+# Known Bugs
+
+- **Grouped statistics can depend on model ordering when `correct = TRUE`.** The grouped compatibility calculation preserves a legacy small random-cell correction, so the sequence of models controls which correction values are assigned to intermediate contingency-table cells. Wide and long inputs therefore need to use the same explicit model order to produce identical results. This regression was identified in [`3d7adf1`](https://github.com/ForrestCKoch/jocomo/commit/3d7adf14c67ee520b895e50e899ab478adbbc6e6), corrected in [`34c2ad3`](https://github.com/ForrestCKoch/jocomo/commit/34c2ad391a066411941db9c441898670e0cdf2c2), and the established grouped statistic contract was restored in [`e6552b8`](https://github.com/ForrestCKoch/jocomo/commit/e6552b82e42dea8a14cda763e2140caac0e9de97). The equivalence regression test now aligns model ordering explicitly in [`4987cd2`](https://github.com/ForrestCKoch/jocomo/commit/4987cd2384976abcf8a7abf8275f21433f85ef39).
+
 
 # References
 
