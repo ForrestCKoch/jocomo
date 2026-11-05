@@ -154,7 +154,8 @@ test_that("wide and long grouped inputs produce the same statistic", {
   names(wide.data) <- sub("pred.", "", names(wide.data), fixed = TRUE)
   set.seed(42)
   wide <- jocomo.chisq.test(
-    label ~ . | sample | test,
+    label ~ ACTINN + moana + scID + scmap + singleR + singlecellNet |
+      sample | test,
     data = wide.data,
     correct = TRUE,
     warn = FALSE
