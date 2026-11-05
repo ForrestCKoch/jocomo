@@ -173,7 +173,7 @@ multiclass.wu.test.formula <- function(formula, data = parent.frame(), ...) {
 .multiclass.wu.test.formula.long <- function(formula, data, ...) {
     normalized_formula <- .jocomo_long_formula(formula)
     tf <- stats::terms(normalized_formula, data = data)
-    mf <- stats::model.frame(tf, data = data)
+    mf <- .jocomo_model_frame(tf, data = data)
 
     if (dim(mf)[2L] != 4L) {
         stop("Incorrect specification for 'formula'")
@@ -195,10 +195,10 @@ multiclass.wu.test.formula <- function(formula, data = parent.frame(), ...) {
 .multiclass.wu.test.formula.wide <- function(formula, data, ...) {
     if (!is.null(data)) {
         tf <- stats::terms(formula, data = data)
-        mf <- stats::model.frame(tf, data = data)
+        mf <- .jocomo_model_frame(tf, data = data)
     } else {
         tf <- stats::terms(formula)
-        mf <- stats::model.frame(tf)
+        mf <- .jocomo_model_frame(tf, data = data)
     }
 
     nmf <- names(mf)
@@ -218,10 +218,11 @@ multiclass.wu.test.formula <- function(formula, data = parent.frame(), ...) {
 
 .multiclass.wu.test.formula.xtabs <- function(formula, data, ...) {
     normalized_formula <- .jocomo_xtabs_formula(formula)
+    mf <- .jocomo_model_frame(normalized_formula, data = data)
+    .jocomo_validate_frequency(mf)
     xt <- stats::xtabs(formula = normalized_formula, data = data)
 
     tf <- stats::terms(normalized_formula, data = data)
-    mf <- stats::model.frame(tf, data = data)
 
     nmf <- names(mf)
     DNAME <- paste0(paste0(names(mf)[1L:(length(nmf) - 1L)], collapse = ", "), ", and ", nmf[length(nmf)])

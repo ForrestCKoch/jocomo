@@ -47,6 +47,26 @@
     )
 }
 
+.jocomo_model_frame <- function(formula, data) {
+    mf <- stats::model.frame(
+        formula,
+        data = data,
+        na.action = stats::na.pass
+    )
+    if (anyNA(mf)) {
+        stop("formula data must not contain missing values")
+    }
+    mf
+}
+
+.jocomo_validate_frequency <- function(mf) {
+    frequency <- mf[[1L]]
+    if (!is.numeric(frequency) || any(!is.finite(frequency)) ||
+        any(frequency < 0)) {
+        stop("frequency must be finite, numeric, and non-negative")
+    }
+}
+
 .jocomo_long_formula <- function(formula) {
     rhs <- formula[[3L]]
     prediction <- rhs[[2L]][[2L]]
