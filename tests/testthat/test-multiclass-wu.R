@@ -99,6 +99,10 @@ test_that("multiclass Wu validates inputs and missing predictions", {
     multiclass.wu.statistic(x, y, correct = NA),
     "single non-missing logical value"
   )
+  expect_error(
+    multiclass.wu.test(x, replace(y, 1L, NA_character_)),
+    "must not contain missing values"
+  )
 })
 
 test_that("multiclass Wu validates tabulated frequencies", {

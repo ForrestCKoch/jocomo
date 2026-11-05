@@ -52,6 +52,9 @@ multiclass.wu.test.default <- function(x, y, models, samples,
         if (length(y) != nrow(x)) {
             stop("Number of rows in x does not match length of y")
         }
+        if (anyNA(x) || anyNA(y)) {
+            stop("'x' and 'y' must not contain missing values")
+        }
 
         k <- nlevels(models)
         if (k < 2L) {
@@ -59,8 +62,12 @@ multiclass.wu.test.default <- function(x, y, models, samples,
         }
     } else {
         # Make sure none of the subject/model entries are NA
-        if (anyNA(samples) || anyNA(models)) {
-            stop("NA's are not allowed in 'models' or 'samples'")
+        if (anyNA(x) || anyNA(y) || anyNA(samples) || anyNA(models)) {
+            stop("NA's are not allowed in 'x', 'y', 'models', or 'samples'")
+        }
+
+        if (length(x) == 0L) {
+            stop("'x' must contain at least one observation")
         }
         # Make sure everything is the same length
         if (!all(lengths(list(x, y, models, samples)) == length(x))) {
@@ -103,7 +110,7 @@ multiclass.wu.test.default <- function(x, y, models, samples,
 
     ## <FIXME split.matrix> -- From friedman.test??
     x <- matrix(unlist(split(c(x), samples)), ncol = k, byrow = TRUE)
-    to.keep <- stats::complete.cases(x) & stats::complete.cases(y)
+    to.keep <- rep(TRUE, nrow(x))
     y <- y[to.keep]  # We only need the first column as it should not change
     x <- x[to.keep, ]
 

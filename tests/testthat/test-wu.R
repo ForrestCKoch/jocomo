@@ -27,11 +27,20 @@ test_that("Wu statistic validates model count and singular tables", {
   y <- c(FALSE, TRUE)
 
   expect_error(wu.statistic(x, y), "at least 2 models")
-  expect_error(wu.statistic(matrix(FALSE, nrow = 2L, ncol = 2L), y), "singular")
-  expect_type(wu.statistic(matrix(FALSE, nrow = 2L, ncol = 2L), y, correct = TRUE), "double")
+  singular_x <- matrix(c(FALSE, TRUE, FALSE, TRUE), nrow = 2L, ncol = 2L)
+  expect_error(wu.statistic(singular_x, y), "singular")
+  expect_type(wu.statistic(singular_x, y, correct = TRUE), "double")
   expect_identical(
-    wu.statistic(matrix(FALSE, nrow = 2L, ncol = 2L), y, correct = TRUE),
-    wu.statistic(matrix(FALSE, nrow = 2L, ncol = 2L), y, correct = TRUE)
+    wu.statistic(singular_x, y, correct = TRUE),
+    wu.statistic(singular_x, y, correct = TRUE)
+  )
+  expect_error(
+    wu.statistic(matrix(0, nrow = 2L, ncol = 2L), y, correct = 1),
+    "single non-missing logical value"
+  )
+  expect_error(
+    wu.statistic(matrix(NA_real_, nrow = 2L, ncol = 2L), y),
+    "must not contain missing values"
   )
 })
 

@@ -42,6 +42,9 @@ wu.test.default <- function(x, y, models, samples, ...) {
         if (length(y) != nrow(x)) {
             stop("Number of rows in x does not match length of y")
         }
+        if (anyNA(x) || anyNA(y)) {
+            stop("'x' and 'y' must not contain missing values")
+        }
 
         k <- nlevels(models)
         if (k < 2L) {
@@ -49,8 +52,12 @@ wu.test.default <- function(x, y, models, samples, ...) {
         }
     } else {
         # Make sure none of the subject/model entries are NA
-        if (anyNA(samples) || anyNA(models)) {
-            stop("NA's are not allowed in 'models' or 'samples'")
+        if (anyNA(x) || anyNA(y) || anyNA(samples) || anyNA(models)) {
+            stop("NA's are not allowed in 'x', 'y', 'models', or 'samples'")
+        }
+
+        if (length(x) == 0L) {
+            stop("'x' must contain at least one observation")
         }
         # Make sure everything is the same length
         if (!all(lengths(list(x, y, models, samples)) == length(x))) {
@@ -93,7 +100,7 @@ wu.test.default <- function(x, y, models, samples, ...) {
 
     ## <FIXME split.matrix> -- From friedman.test??
     x <- matrix(unlist(split(c(x), samples)), ncol = k, byrow = TRUE)
-    to.keep <- stats::complete.cases(x) & stats::complete.cases(y)
+    to.keep <- rep(TRUE, nrow(x))
     y <- y[to.keep]  # We only need the first column as it should not change
     x <- x[to.keep, ]
 
@@ -296,19 +303,39 @@ wu.statistic.default <- function(x, y, correct = FALSE, ...) {
     if (length(y) != nrow(x)) {
         stop("'y' must have one value for each row of 'x'")
     }
-    if (length(correct) != 1L || is.na(correct)) {
-        stop("'correct' must be a single non-missing logical value")
-    }
-
-    x <- structure(x == max(x), dim = dim(x), class = c("matrix", "logical"))
-    y <- y == max(y)
-
-    q <- dim(x)[2L]
+    q <- ncol(x)
     if (q < 2L) {
         stop("'x' must contain predictions from at least 2 models")
     }
-    if (anyNA(x) || anyNA(y) || !any(y) || all(y)) {
-        stop("'x' and 'y' must not contain missing values and 'y' must have two levels")
+    if (length(correct) != 1L || !is.logical(correct) || is.na(correct)) {
+        stop("'correct' must be a single non-missing logical value")
+    }
+
+    if (anyNA(x) || anyNA(y)) {
+        stop("'x' and 'y' must not contain missing values")
+    }
+    y <- factor(y)
+    if (nlevels(y) != 2L) {
+        stop("'y' must have exactly 2 levels")
+    }
+    x_levels <- unique(as.character(x))
+    if (length(x_levels) != 2L ||
+        !setequal(x_levels, levels(y))) {
+        stop("'x' must have the same two levels as 'y'")
+    }
+    x <- structure(
+        matrix(
+            as.character(x) == levels(y)[2L],
+            nrow = nrow(x),
+            ncol = ncol(x)
+        ),
+        dim = dim(x),
+        class = c("matrix", "logical")
+    )
+    y <- y == levels(y)[2L]
+
+    if (!any(y) || all(y)) {
+        stop("'y' must have two observed levels")
     }
 
     x.pred.pos.cases <- x[y, , drop = FALSE]
@@ -398,12 +425,18 @@ wu.statistic.xtabs <- function(xt, correct = FALSE, ...) {
     if (length(correct) != 1L || is.na(correct)) {
         stop("'correct' must be a single non-missing logical value")
     }
+    if (!is.logical(correct)) {
+        stop("'correct' must be a single non-missing logical value")
+    }
 
 
     # p <- dim(x)[1]
     q <- length(dim(xt)) - 1L
     if (q < 2L) {
         stop("xt must contain predictions from at least 2 models")
+    }
+    if (any(!is.finite(as.numeric(xt))) || any(as.numeric(xt) < 0)) {
+        stop("xt frequencies must be finite and non-negative")
     }
 
     # x.pred.pos.cases <- x[y,] x.pred.neg.cases <- x[!y,]
