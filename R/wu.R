@@ -201,7 +201,7 @@ wu.test.formula <- function(formula, data = parent.frame(), ...) {
     nmf <- names(mf)
     DNAME <- paste0(paste0(names(mf)[1L:(length(nmf) - 1L)], collapse = ", "), ", and ", nmf[length(nmf)])
 
-    ret <- jocomo::wu.test(xt)
+    ret <- jocomo::wu.test(xt, ...)
     ret$data.name <- DNAME
     ret
 }
