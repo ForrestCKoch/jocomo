@@ -210,6 +210,74 @@ test_that("test wu.test.default: data is logical, x is vector, models and sample
 #########################
 # Wide format formula
 #########################
+test_that("formula handling is strict and non-mutating", {
+  test.data <- get.test.data.1()
+  test.df <- data.frame(
+    y = test.data$y,
+    x1 = test.data$x[, 1L],
+    x2 = test.data$x[, 2L]
+  )
+
+  long_formula <- y ~ x:model | sample
+  long_formula_copy <- long_formula
+  long_data <- data.frame(
+    y = rep(test.df$y, 2L),
+    x = c(test.df$x1, test.df$x2),
+    model = factor(rep(c("m1", "m2"), each = nrow(test.df))),
+    sample = factor(rep(seq_len(nrow(test.df)), 2L))
+  )
+  wu.test(long_formula, data = long_data)
+  expect_identical(long_formula, long_formula_copy)
+
+  expect_error(
+    wu.test(y ~ x1 | sample, data = long_data),
+    "Long formulas"
+  )
+  expect_error(
+    wu.test(y ~ x1 / x2, data = test.df),
+    "Unsupported formula RHS"
+  )
+})
+
+test_that("formula handling preserves local environments and validates data", {
+  test.data <- get.test.data.1()
+  local_formula_test <- function() {
+    x1 <- test.data$x[, 1L]
+    x2 <- test.data$x[, 2L]
+    y <- test.data$y
+    wu.test(y ~ x1 + x2)
+  }
+
+  expect_s3_class(local_formula_test(), "htest")
+  expect_error(
+    wu.test(y ~ x1 + x2, data = data.frame(
+      y = test.data$y,
+      x1 = test.data$x[, 1L],
+      x2 = c(test.data$x[-1L, 2L], NA)
+    )),
+    "must not contain missing values"
+  )
+})
+
+test_that("cross-tabulated formulas validate frequencies", {
+  data <- data.frame(
+    Freq = c(1, 2, 3, 4),
+    y = factor(c(0, 0, 1, 1)),
+    x1 = factor(c(0, 1, 0, 1)),
+    x2 = factor(c(0, 1, 1, 0))
+  )
+
+  expect_error(
+    wu.test(Freq ~ x1 || y, data = data),
+    "at least 2 model predictions"
+  )
+  expect_error(
+    wu.test(Freq ~ x1 + x2 || y,
+            data = transform(data, Freq = -Freq)),
+    "finite, numeric, and non-negative"
+  )
+})
+
 test_that("test .wu.test.formula.wide: data is logical list, wu.test.formula(y~x)", {
   test.data <- get.test.data.1()
 
