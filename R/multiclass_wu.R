@@ -12,7 +12,9 @@ multiclass.wu.test <- function(...) UseMethod("multiclass.wu.test")
 #' predictions with \eqn{p} samples as rows and \eqn{q} models as columns. If
 #' `x` is a `vector`, it should have length \eqn{p*q} and both `models` and
 #' `samples` must be specified. The data must be able to be coerced to a `factor`
-#' with two or more levels. Ignored if a formula is specified.
+#' with two or more levels. Predictions may include valid class levels that are
+#' absent from `y` in the supplied subset. Missing predictions are not allowed.
+#' Ignored if a formula is specified.
 #' @param y If `x` is a `matrix` or `data.frame`, then `y` must be a `vector` of
 #' length \eqn{p} indicating positive and negative cases. If `x` is a `vector`,
 #' then `y` must be a `vector` of length \eqn{p*q}. The data must be able to be
@@ -156,6 +158,10 @@ multiclass.wu.test.default <- function(x, y, models, samples,
 #' the others by `||` should be included on the right hand side of the formula.
 #' e.g with 3 models, x1, x2, and x3, and true labels y, the formula should follow
 #' `Freq ~ x1 + x2 + x3 || y`
+#'
+#' Prediction columns may contain classes that do not occur in the observed
+#' outcome vector for a subset of the data. Such predictions are retained and
+#' are not treated as missing values.
 #' @exportS3Method jocomo::multiclass.wu.test formula
 multiclass.wu.test.formula <- function(formula, data = parent.frame(), ...) {
     # Sanity checks
@@ -283,7 +289,8 @@ multiclass.wu.statistic <- function(...) UseMethod("multiclass.wu.statistic")
 #' @inheritParams multiclass.wu.statistic
 #' @param x An object which can be coerced to a `matrix` of size \eqn{p*q} where
 #' \eqn{p} is the number of samples and \eqn{q} is the number of models.
-#' The data should consist of two  or more levels.
+#' The data should consist of two or more levels. Prediction values may include
+#' valid classes absent from `y`; missing values are not allowed.
 #' @param y A `vector` of length \eqn{p} where
 #' The data should consist of two or more levels.
 #' @param correct Adds a small value to each cell of the 2x2 contingency table to adjust for 0 counts
