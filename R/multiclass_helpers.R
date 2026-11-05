@@ -49,11 +49,10 @@
             m1 <- factor(x[row_idx, 1L] == level, levels = c(TRUE, FALSE))
             m2 <- factor(x[row_idx, i] == level, levels = c(TRUE, FALSE))
             m3 <- factor(x[row_idx, j] == level, levels = c(TRUE, FALSE))
+            correction <- if (isTRUE(correct)) 0.5 else 0
             counts <- stats::xtabs(
                 weights[row_idx] ~ m1 + m2 + m3
             )
-
-            correction <- if (isTRUE(correct)) 0.5 else 0
             type_i[k] <- counts[1L, 2L, 2L] + correction
             type_ii[k] <- counts[2L, 1L, 1L] + correction
             k <- k + 1L
@@ -128,4 +127,69 @@
             allow_singular = correct
         )
     }, numeric(1L)))
+}
+
+.multiclass_wu_legacy_statistic <- function(x, y, correct = FALSE) {
+    q <- ncol(x)
+    statistic <- 0
+
+    for (level in levels(y)) {
+        row_idx <- which(y == level)
+        m1 <- factor(x[row_idx, 1L] == level, levels = c(TRUE, FALSE))
+        type_i <- numeric((q - 1L)^2L)
+        type_ii <- numeric((q - 1L)^2L)
+        k <- 1L
+
+        for (i in 2L:q) {
+            m2 <- factor(x[row_idx, i] == level, levels = c(TRUE, FALSE))
+            for (j in 2L:q) {
+                m3 <- factor(x[row_idx, j] == level, levels = c(TRUE, FALSE))
+                counts <- table(m1, m2, m3)
+                correction <- if (isTRUE(correct)) {
+                    stats::runif(1L, 1 / 1e4, 5 / 1e4)
+                } else {
+                    0
+                }
+                type_i[k] <- counts[1L, 2L, 2L] + correction
+                type_ii[k] <- counts[2L, 1L, 1L] + correction
+                k <- k + 1L
+            }
+        }
+
+        type_i_matrix <- matrix(type_i, nrow = q - 1L)
+        type_ii_matrix <- matrix(type_ii, nrow = q - 1L)
+        differences <- diag(type_i_matrix) - diag(type_ii_matrix)
+        covariance <- type_i_matrix + type_ii_matrix
+        statistic <- statistic +
+            t(differences) %*% solve(covariance) %*% differences
+    }
+
+    as.numeric(statistic)
+}
+
+.jocomo_legacy_group_statistic <- function(
+    x, y, models, samples, correct = FALSE
+) {
+    models <- factor(models)
+    samples <- factor(samples)
+    order_index <- order(models, samples)
+    x <- x[order_index]
+    y <- y[order_index]
+    models <- models[order_index]
+    samples <- samples[order_index]
+    k <- nlevels(models)
+
+    y_by_sample <- matrix(unlist(split(y, samples)), ncol = k, byrow = TRUE)
+    y <- as.vector(y_by_sample[, 1L])
+    x <- matrix(unlist(split(x, samples)), ncol = k, byrow = TRUE)
+    keep <- stats::complete.cases(x) & stats::complete.cases(y)
+    x <- x[keep, , drop = FALSE]
+    y <- factor(y[keep])
+    x <- structure(
+        factor(x, levels = levels(y)),
+        dim = dim(x),
+        class = c("factor", "matrix", "array")
+    )
+
+    .multiclass_wu_legacy_statistic(x, y, correct = correct)
 }

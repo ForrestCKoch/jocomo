@@ -116,14 +116,14 @@ jocomo.chisq.test.default <- function(x, y, samples, models, groups,
         wu.stats <- stats::aggregate(result ~ groups,
                                      data = data.frame(result = s, groups),
                                      FUN = \(idx, ...) {
-            mc.wu <- jocomo::multiclass.wu.test(
-                x = x[idx, , drop = FALSE],
-                y = y[idx],
-                correct = correct,
-                warn = warn
+            stat <- .jocomo_legacy_group_statistic(
+                x = c(x[idx, , drop = FALSE]),
+                y = rep(y[idx], ncol(x)),
+                models = c(col(x[idx, , drop = FALSE])),
+                samples = rep(seq_along(idx), ncol(x)),
+                correct = correct
             )
-            stat <- mc.wu[['statistic']] |> as.numeric()
-            df <- mc.wu[['parameter']] |> as.numeric()
+            df <- nlevels(factor(y[idx])) * (ncol(x) - 1L)
             c(statistic=stat, parameter=df)
         })['result']
     } else {
@@ -155,15 +155,15 @@ jocomo.chisq.test.default <- function(x, y, samples, models, groups,
         wu.stats <- stats::aggregate(result ~ groups,
                                      data = data.frame(result = s, groups),
                                      FUN = \(idx, ...) {
-            mc.wu <- jocomo::multiclass.wu.test(
-                  x = x[idx],
-                  y = y[idx],
-                  samples = droplevels(samples[idx]),
-                  models = droplevels(models[idx]),
-                  correct = correct,
-                  warn = warn)
-            stat <- mc.wu[['statistic']] |> as.numeric()
-            df <- mc.wu[['parameter']] |> as.numeric()
+            stat <- .jocomo_legacy_group_statistic(
+                x = x[idx],
+                y = y[idx],
+                samples = samples[idx],
+                models = models[idx],
+                correct = correct
+            )
+            df <- nlevels(factor(y[idx])) *
+                (nlevels(factor(models[idx])) - 1L)
             c(statistic=stat, parameter=df)
         })
     }
