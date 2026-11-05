@@ -229,8 +229,6 @@ multiclass.wu.test.formula <- function(formula, data = parent.frame(), ...) {
     .jocomo_validate_frequency(mf)
     xt <- stats::xtabs(formula = normalized_formula, data = data)
 
-    tf <- stats::terms(normalized_formula, data = data)
-
     nmf <- names(mf)
     DNAME <- paste0(paste0(names(mf)[1L:(length(nmf) - 1L)], collapse = ", "), ", and ", nmf[length(nmf)])
 
