@@ -105,17 +105,13 @@ multiclass.wu.test.default <- function(x, y, models, samples,
     y <- y[to.keep]  # We only need the first column as it should not change
     x <- x[to.keep, ]
 
-    # Convert everything to factors
+    # Keep prediction labels outside the observed outcome classes: a model can
+    # validly predict a class absent from the current sample.
     y <- factor(y)
     if (nlevels(y) < 2L) {
         stop("'y' must have at least 2 levels")
     }
-    x <- structure(factor(x, levels = levels(y)), dim = dim(x), class = c("factor", "matrix", "array"))
-    if (anyNA(x)) {
-        stop("'x' must have the same levels as 'y'")
-    }
 
-    #STATISTIC <- jocomo::multiclass.wu.statistic(x = x, y = y)
     STATISTIC <- multiclass.wu.statistic(x = x, y = y, correct = correct)
     PARAMETER <- nlevels(y) * (dim(x)[2L] - 1L)
     PVAL <- stats::pchisq(STATISTIC, df = PARAMETER, lower.tail = FALSE)

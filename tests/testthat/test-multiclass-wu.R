@@ -54,7 +54,7 @@ test_that("multiclass Wu handles singular tables explicitly", {
   )
 })
 
-test_that("multiclass Wu validates inputs and prediction levels", {
+test_that("multiclass Wu validates inputs and missing predictions", {
   x <- matrix(c("a", "a", "b", "b", "a", "a", "b", "b"),
               nrow = 4L)
   y <- factor(c("a", "a", "b", "b"))
@@ -71,12 +71,13 @@ test_that("multiclass Wu validates inputs and prediction levels", {
     multiclass.wu.statistic(matrix(NA_character_, nrow = 4L, ncol = 2L), y),
     "must not contain missing values"
   )
-  expect_error(
+  expect_s3_class(
     multiclass.wu.test(
-      matrix(c("a", "a", "c", "c", "a", "a", "b", "b"), nrow = 4L),
+      matrix(c("a", "b", "a", "a", "c", "a", "c", "b"),
+             nrow = 4L, byrow = TRUE),
       y
     ),
-    "same levels as 'y'"
+    "htest"
   )
   expect_error(
     multiclass.wu.statistic(x, y, correct = NA),
