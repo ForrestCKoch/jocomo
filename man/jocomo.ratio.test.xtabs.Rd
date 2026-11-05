@@ -4,12 +4,14 @@
 \alias{jocomo.ratio.test.xtabs}
 \title{Title}
 \usage{
-\method{jocomo.ratio.test}{xtabs}(xt, data = parent.frame())
+\method{jocomo.ratio.test}{xtabs}(xt, data = parent.frame(), ...)
 }
 \arguments{
 \item{xt}{TODO}
 
 \item{data}{TODO}
+
+\item{...}{Additional arguments reserved for future implementations.}
 }
 \value{
 TODO

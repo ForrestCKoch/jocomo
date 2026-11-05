@@ -7,12 +7,13 @@ jocomo.ratio.test <- function(...) UseMethod("jocomo.ratio.test")
 #' @param samples TODO
 #' @param models TODO
 #' @param groups TODO
+#' @param ... Additional arguments reserved for future implementations.
 #'
 #' @return TODO
 #' @export
 #' @examples
 #' 'TODO'
-jocomo.ratio.test.default <- function(x, y, samples, models, groups) {
+jocomo.ratio.test.default <- function(x, y, samples, models, groups, ...) {
   stop("This function is not supported")
 
     if (is.matrix(x) || is.data.frame(x)) {
@@ -54,11 +55,12 @@ jocomo.ratio.test.default <- function(x, y, samples, models, groups) {
 #'
 #' @param formula TODO
 #' @param data TODO
+#' @param ... Additional arguments reserved for future implementations.
 #' @return TODO
 #' @export
 #' @examples
 #' 'TODO'
-jocomo.ratio.test.formula <- function(formula, data=parent.frame()) {
+jocomo.ratio.test.formula <- function(formula, data=parent.frame(), ...) {
   stop("This function is not supported")
 }
 
@@ -101,11 +103,11 @@ jocomo.ratio.test.formula <- function(formula, data=parent.frame()) {
 #'
 #' @param xt TODO
 #' @param data TODO
+#' @param ... Additional arguments reserved for future implementations.
 #' @return TODO
 #' @export
 #' @examples
 #' 'TODO'
-jocomo.ratio.test.xtabs <- function(xt, data=parent.frame()) {
+jocomo.ratio.test.xtabs <- function(xt, data=parent.frame(), ...) {
   stop("This function is not supported")
 }
-

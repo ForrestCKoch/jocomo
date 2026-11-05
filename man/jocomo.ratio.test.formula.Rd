@@ -4,12 +4,14 @@
 \alias{jocomo.ratio.test.formula}
 \title{Title}
 \usage{
-\method{jocomo.ratio.test}{formula}(formula, data = parent.frame())
+\method{jocomo.ratio.test}{formula}(formula, data = parent.frame(), ...)
 }
 \arguments{
 \item{formula}{TODO}
 
 \item{data}{TODO}
+
+\item{...}{Additional arguments reserved for future implementations.}
 }
 \value{
 TODO

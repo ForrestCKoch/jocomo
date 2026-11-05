@@ -4,7 +4,7 @@
 \alias{jocomo.ratio.test.default}
 \title{Title}
 \usage{
-\method{jocomo.ratio.test}{default}(x, y, samples, models, groups)
+\method{jocomo.ratio.test}{default}(x, y, samples, models, groups, ...)
 }
 \arguments{
 \item{x}{TODO}
@@ -16,6 +16,8 @@
 \item{models}{TODO}
 
 \item{groups}{TODO}
+
+\item{...}{Additional arguments reserved for future implementations.}
 }
 \value{
 TODO

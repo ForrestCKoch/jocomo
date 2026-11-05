@@ -2,3 +2,5 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^\.\.Rcheck$
+^\.github$
+^jocomo_[0-9.]+\.pdf$
