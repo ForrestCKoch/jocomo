@@ -74,6 +74,49 @@
     }
 }
 
+.jocomo_normalize_long_data <- function(x, y, models, samples) {
+        if (!all(lengths(list(x, y, models, samples)) == length(x))) {
+            stop("'x', 'y', 'models' and 'samples' must have the same length")
+        }
+        if (length(x) == 0L) {
+            stop("'x' must contain at least one observation")
+        }
+        if (anyNA(x) || anyNA(y) || anyNA(models) || anyNA(samples)) {
+            stop("'x', 'y', 'models', and 'samples' must not contain missing values")
+        }
+
+        models <- factor(models)
+        samples <- factor(samples)
+        cells <- table(models, samples)
+        if (any(cells == 0L)) {
+            stop("There must be exactly one prediction from each model for each subject. At least one is missing")
+        }
+        if (any(cells > 1L)) {
+            stop("There must be exactly one prediction from each model for each subject. At least one is duplicated")
+        }
+
+        order_index <- order(models, samples)
+        models <- models[order_index]
+        samples <- samples[order_index]
+        x <- x[order_index]
+        y <- y[order_index]
+        k <- nlevels(models)
+        y_by_sample <- matrix(unlist(split(y, samples)), ncol = k, byrow = TRUE)
+        if (any(apply(y_by_sample, 1L, \(values) {
+            length(unique(values))
+        }) != 1L)) {
+            stop("'y' must not differ within levels of 'samples'")
+        }
+
+        list(
+            x = x,
+            y = as.vector(y_by_sample[, 1L]),
+            models = models,
+            samples = samples,
+            k = k
+        )
+}
+
 .jocomo_long_formula <- function(formula) {
     rhs <- formula[[3L]]
     prediction <- rhs[[2L]][[2L]]

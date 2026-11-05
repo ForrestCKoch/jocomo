@@ -51,18 +51,6 @@ wu.test.default <- function(x, y, models, samples, ...) {
             stop("'x' must contain predictions from at least 2 models")
         }
     } else {
-        # Make sure none of the subject/model entries are NA
-        if (anyNA(x) || anyNA(y) || anyNA(samples) || anyNA(models)) {
-            stop("NA's are not allowed in 'x', 'y', 'models', or 'samples'")
-        }
-
-        if (length(x) == 0L) {
-            stop("'x' must contain at least one observation")
-        }
-        # Make sure everything is the same length
-        if (!all(lengths(list(x, y, models, samples)) == length(x))) {
-            stop("'x', 'y', 'models' and 'samples' must have the same length")
-        }
         DNAME <- paste(deparse(substitute(x)),
                           ", ",
                           deparse(substitute(y)),
@@ -71,31 +59,12 @@ wu.test.default <- function(x, y, models, samples, ...) {
                           ", and ",
                           deparse(substitute(samples)),
                        sep = "")
-        # Make sure we have complete data
-        if (any(c(table(models, samples)) == 0L)) {
-            stop("There must be exactly one prediction from each model for each subject.  At least one is missing")
-        }
-        if (any(c(table(models, samples)) > 1L)) {
-            stop("There must be exactly one prediction from each model for each subject.  At least one is duplicated")
-        }
-
-        models <- factor(models)
-        samples <- factor(samples)
-        ## Need to ensure consistent order of observations within blocks.
-        o <- order(models, samples)
-        y <- y[o]
-        x <- x[o]
-        models <- models[o]
-        samples <- samples[o]
-        k <- nlevels(models)
-        y <- matrix(unlist(split(c(y), samples)), ncol = k, byrow = TRUE)
-
-        # Make sure y is consistent for each subject
-        if (any(apply(y, 1L, \(s) length(unique(s)), simplify = TRUE) != 1L)) {
-            stop("'y' must not differ within levels of 'samples'")
-        }
-        # Remove unecessary data from y and convert to a vector ...
-        y <- as.vector(y[, 1L])
+        normalized <- .jocomo_normalize_long_data(x, y, models, samples)
+        x <- normalized$x
+        y <- normalized$y
+        models <- normalized$models
+        samples <- normalized$samples
+        k <- normalized$k
     }
 
     ## <FIXME split.matrix> -- From friedman.test??
