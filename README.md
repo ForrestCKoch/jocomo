@@ -67,6 +67,8 @@ devtools::install_github("https://github.com/ForrestCKoch/jocomo.git")
 - where $a^TA^{-1}a$ is a weighted sum of squared deviation from the mean under $H\_0$
 - $X^2\_{EM}\overset{a}\sim \chi^2\_{2\times(J-1)}$
 
+See [Wu (2023)](#references) for the original extension of McNemar's test.
+
 ## Wu's Extension: Further Information
 
 $a = (n^{(22)}\_{10}-n^{(22)}\_{01}, ..., n^{(22)}\_{10}-n^{(22)}\_{01})$ 
@@ -98,3 +100,7 @@ n^{(J2)}\_{10}+n^{(J2)}\_{01} & n^{(23)}\_{10}+n^{(23)}\_{01} & ... & n^{(JJ)}\_
 - $H\_0: \bigcap\_{d\in D}\Big(\bigcap\_{c\in C} \big[\text{Acc}(T\_1,c,d)=...=\text{Acc}(T\_J,c,d)\big]\Big)$
 - $X^2\_{JCM} = \sum\_{d\in D,c\in C}\big(\sideset{\_{(d)}}{^T\_c}{a}\sideset{\_{(d)}}{^{-1}\_c}{A}\sideset{\_{(d)}}{\_c}{a}\big)$
 - $X^2\_{JCM}\overset{a}\sim\chi^2\_{D\times C\times(J-1)}$
+
+# References
+
+Wu, Y. (2023). Joint comparison of the predictive values of multiple binary diagnostic tests: An extension of McNemar's test. *Journal of Biopharmaceutical Statistics, 33*(1), 31–42. https://doi.org/10.1080/105434062022.2065500
