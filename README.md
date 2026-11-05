@@ -103,4 +103,4 @@ n^{(J2)}\_{10}+n^{(J2)}\_{01} & n^{(23)}\_{10}+n^{(23)}\_{01} & ... & n^{(JJ)}\_
 
 # References
 
-Wu, Y. (2023). Joint comparison of the predictive values of multiple binary diagnostic tests: An extension of McNemar's test. *Journal of Biopharmaceutical Statistics, 33*(1), 31–42. https://doi.org/10.1080/105434062022.2065500
+Wu, Y. (2023). Joint comparison of the predictive values of multiple binary diagnostic tests: An extension of McNemar's test. *Journal of Biopharmaceutical Statistics, 33*(1), 31–42. [https://doi.org/10.1080/105434062022.2065500](https://doi.org/10.1080/10543406.2022.2065500)
