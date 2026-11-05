@@ -161,41 +161,13 @@ multiclass.wu.test.formula <- function(formula, data = parent.frame(), ...) {
     if (missing(formula)) {
         stop("formula missing")
     }
-    if (length(formula) != 3L) {
-        stop("incorrect specification for 'formula'")
-    }
-
-    long.formula <- F
-    xtabs.formula <- F
-    if (typeof(formula[[3L]]) == as.name("language")) {
-        if (formula[[3L]][[1L]] != as.name("+")) {
-            if (formula[[3L]][[1L]] == as.name("|")) {
-                long.formula <- T
-            }
-            if (formula[[3L]][[1L]] == as.name("||")) {
-                xtabs.formula <- T
-            }
-        }
-    }
-
-    # This formula follows the long format specification if so, formula should be in the format of y~x:model|subject
-    if (long.formula) {
-        if ((typeof(formula[[3L]][[1L]]) != as.name("symbol")) || (typeof(formula[[3L]][[2L]]) != as.name("language")) || (length(formula[[3L]][[2L]]) !=
-            3L) || (typeof(formula[[3L]][[3L]]) != as.name("symbol"))) {
-            stop("Incorrect specification for 'formula'")
-        }
-
-        if ((formula[[3L]][[2L]][[1L]]) != as.name(":") || formula[[3L]][[1L]] != as.name("|")) {
-            stop("Incorrect specification for 'formula'")
-        }
-
-        return(.multiclass.wu.test.formula.long(formula = formula, data = data, ...))
-    } else if (xtabs.formula) {
-        return(.multiclass.wu.test.formula.xtabs(formula = formula, data = data, ...))
-    } else {
-        # Is it save to assume this is wide format?  I'm not sure, but for now I will ...
-        return(.multiclass.wu.test.formula.wide(formula = formula, data = data, ...))
-    }
+    kind <- .jocomo_formula_kind(formula)
+    switch(
+        kind,
+        long = .multiclass.wu.test.formula.long(formula = formula, data = data, ...),
+        xtabs = .multiclass.wu.test.formula.xtabs(formula = formula, data = data, ...),
+        wide = .multiclass.wu.test.formula.wide(formula = formula, data = data, ...)
+    )
 }
 
 .multiclass.wu.test.formula.long <- function(formula, data, ...) {
