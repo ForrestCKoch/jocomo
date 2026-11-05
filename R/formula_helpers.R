@@ -48,11 +48,11 @@
 }
 
 .jocomo_model_frame <- function(formula, data) {
-    mf <- stats::model.frame(
-        formula,
-        data = data,
-        na.action = stats::na.pass
-    )
+    arguments <- list(formula = formula, na.action = stats::na.pass)
+    if (!is.null(data)) {
+        arguments$data <- data
+    }
+    mf <- do.call(stats::model.frame, arguments)
     if (anyNA(mf)) {
         stop("formula data must not contain missing values")
     }

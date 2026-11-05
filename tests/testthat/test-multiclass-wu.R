@@ -22,6 +22,89 @@ get.test.data.1 <- function() {
   list(x = x, y = y, statistic = statistic, pvalue = pvalue, df = df, method = "Multiclass Wu's test")
 }
 
+test_that("multiclass Wu supports two models", {
+  x <- matrix(
+    c("a", "a", "b", "b",
+      "b", "a", "a", "b"),
+    nrow = 4L,
+    byrow = FALSE
+  )
+  y <- factor(c("a", "a", "b", "b"))
+
+  statistic <- multiclass.wu.statistic(x, y)
+
+  expect_type(statistic, "double")
+  expect_length(statistic, 1L)
+  expect_true(is.finite(statistic))
+})
+
+test_that("multiclass Wu handles singular tables explicitly", {
+  x <- matrix("a", nrow = 4L, ncol = 2L)
+  y <- factor(c("a", "a", "b", "b"))
+
+  expect_error(
+    multiclass.wu.statistic(x, y),
+    "covariance matrix is singular"
+  )
+  corrected <- multiclass.wu.statistic(x, y, correct = TRUE)
+  expect_true(is.finite(corrected))
+  expect_identical(
+    corrected,
+    multiclass.wu.statistic(x, y, correct = TRUE)
+  )
+})
+
+test_that("multiclass Wu validates inputs and prediction levels", {
+  x <- matrix(c("a", "a", "b", "b", "a", "a", "b", "b"),
+              nrow = 4L)
+  y <- factor(c("a", "a", "b", "b"))
+
+  expect_error(
+    multiclass.wu.statistic(x[, 1L, drop = FALSE], y),
+    "at least 2 models"
+  )
+  expect_error(
+    multiclass.wu.statistic(x, y[-1L]),
+    "one value for each row"
+  )
+  expect_error(
+    multiclass.wu.statistic(matrix(NA_character_, nrow = 4L, ncol = 2L), y),
+    "must not contain missing values"
+  )
+  expect_error(
+    multiclass.wu.test(
+      matrix(c("a", "a", "c", "c", "a", "a", "b", "b"), nrow = 4L),
+      y
+    ),
+    "same levels as 'y'"
+  )
+  expect_error(
+    multiclass.wu.statistic(x, y, correct = NA),
+    "single non-missing logical value"
+  )
+})
+
+test_that("multiclass Wu validates tabulated frequencies", {
+  data <- data.frame(
+    Freq = c(1, 2, 3, 4),
+    y = factor(c("a", "a", "b", "b")),
+    x1 = factor(c("a", "b", "a", "b")),
+    x2 = factor(c("a", "b", "b", "a"))
+  )
+  xt <- xtabs(Freq ~ y + x1 + x2, data = data)
+  expect_error(
+    multiclass.wu.statistic(
+      xtabs(Freq ~ y + x1 + x2,
+            data = transform(data, Freq = -Freq))
+    ),
+    "finite, numeric, and non-negative"
+  )
+  expect_error(
+    multiclass.wu.statistic(xtabs(Freq ~ y + x1, data = data)),
+    "at least 2 models"
+  )
+})
+
 ####################
 # No Formula
 ####################

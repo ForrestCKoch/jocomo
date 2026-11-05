@@ -31,7 +31,9 @@ multiclass.wu.test <- function(...) UseMethod("multiclass.wu.test")
 #' @rdname multiclass.wu.test
 #' @method multiclass.wu.test default
 #' @exportS3Method jocomo::multiclass.wu.test default
-multiclass.wu.test.default <- function(x, y, models, samples, correct = F, warn = getOption("warn"), ...) {
+multiclass.wu.test.default <- function(x, y, models, samples,
+                                       correct = FALSE,
+                                       warn = getOption("warn"), ...) {
     # The following code is adapted from stats::friedman.test
 
     # If x is a matrix then we don't need to do much
@@ -45,18 +47,21 @@ multiclass.wu.test.default <- function(x, y, models, samples, correct = F, warn 
         models <- factor(c(col(x)))
         samples <- factor(c(row(x)))
 
-        if (any(diff(c(length(y), dim(x)[1L]))) != 0L) {
+        if (length(y) != nrow(x)) {
             stop("Number of rows in x does not match length of y")
         }
 
         k <- nlevels(models)
+        if (k < 2L) {
+            stop("'x' must contain predictions from at least 2 models")
+        }
     } else {
         # Make sure none of the subject/model entries are NA
         if (anyNA(samples) || anyNA(models)) {
             stop("NA's are not allowed in 'models' or 'samples'")
         }
         # Make sure everything is the same length
-        if (any(diff(c(length(y), length(models), length(samples), length(x))) != 0L)) {
+        if (!all(lengths(list(x, y, models, samples)) == length(x))) {
             stop("'x', 'y', 'models' and 'samples' must have the same length")
         }
         DNAME <- paste(deparse(substitute(x)),
@@ -87,7 +92,7 @@ multiclass.wu.test.default <- function(x, y, models, samples, correct = F, warn 
         y <- matrix(unlist(split(c(y), samples)), ncol = k, byrow = TRUE)
 
         # Make sure y is consistent for each subject
-        if (any(apply(y, 1L, \(s) length(unique(s)), simplify = T) != 1L)) {
+        if (any(apply(y, 1L, \(s) length(unique(s)), simplify = TRUE) != 1L)) {
             stop("'y' must not differ within levels of 'samples'")
         }
         # Remove unecessary data from y and convert to a vector ...
@@ -103,11 +108,11 @@ multiclass.wu.test.default <- function(x, y, models, samples, correct = F, warn 
     # Convert everything to factors
     y <- factor(y)
     if (nlevels(y) < 2L) {
-        stop("'y' must have 2 or more levels")
+        stop("'y' must have at least 2 levels")
     }
     x <- structure(factor(x, levels = levels(y)), dim = dim(x), class = c("factor", "matrix", "array"))
-    if (any(is.na(x)) & warn) {
-        warning("'x' does not have the same levels as 'y'")
+    if (anyNA(x)) {
+        stop("'x' must have the same levels as 'y'")
     }
 
     #STATISTIC <- jocomo::multiclass.wu.statistic(x = x, y = y)
@@ -252,8 +257,8 @@ multiclass.wu.test.xtabs <- function(xt, ...) {
 
     k <- length(dim(xt)) - 1L
 
-    if (k < 1L) {
-        stop("xt has too few dimensions")
+    if (k < 2L) {
+        stop("xt must contain predictions from at least 2 models")
     }
 
     # If x is a matrix then we don't need to do much
@@ -287,47 +292,12 @@ multiclass.wu.statistic <- function(...) UseMethod("multiclass.wu.statistic")
 #' The data should consist of two or more levels.
 #' @param correct Adds a small value to each cell of the 2x2 contingency table to adjust for 0 counts
 #' @export
-multiclass.wu.statistic.default <- function(x, y, correct = F, ...) {
-    #x <- structure(x == max(x), dim = dim(x), class = c("matrix", "logical"))
-    #y <- y == max(y)
-
-    p <- dim(x)[1L]
-    q <- dim(x)[2L]
-
-    statistic <- 0
-    for(level in levels(y)){
-
-      type.i <- c()
-      type.ii <- c()
-      k <- 1L
-
-      row.idx <- which(y==level)
-
-      m1 <- (x[row.idx, 1L] == level) |> factor(levels=c(T,F))
-
-      for (i in 2L:q) {
-        m2 <- (x[row.idx, i] == level) |> factor(levels=c(T,F))
-        for (j in 2L:q) {
-          m3 <- (x[row.idx, j] == level) |> factor(levels=c(T,F))
-
-          tb <- table(m1, m2, m3) + ifelse(correct, stats::runif(1,1/1e4,5/1e4), 0)
-
-          type.i[k] <- tb[1L, 2L, 2L]
-          type.ii[k] <- tb[2L, 1L, 1L]
-
-          k <- k + 1L
-        }
-      }
-
-      type.i.matrix <- matrix(type.i, nrow = q - 1L)
-      type.ii.matrix <- matrix(type.ii, nrow = q - 1L)
-
-      a <- diag(type.i.matrix) - diag(type.ii.matrix)
-      A <- type.i.matrix + type.ii.matrix
-
-      statistic <- statistic + ( t(a) %*% solve(A) %*% a )
-    }
-  statistic |> as.numeric()
+multiclass.wu.statistic.default <- function(x, y, correct = FALSE, ...) {
+    .multiclass_wu_statistic_from_data(
+        x = x,
+        y = y,
+        correct = correct
+    )
 }
 
 
@@ -340,55 +310,32 @@ multiclass.wu.statistic.default <- function(x, y, correct = F, ...) {
 #' while the remaining dimensions refer to the model predictions.
 #' @param correct Adds a small value to each cell of the 2x2 contingency table to adjust for 0 counts
 #' @export
-multiclass.wu.statistic.xtabs <- function(xt, correct = F, ...) {
-    if (any(diff(dim(xt)) != 0L)) {
+multiclass.wu.statistic.xtabs <- function(xt, correct = FALSE, ...) {
+    if (!is.table(xt)) {
+        stop("'xt' must be a table or xtabs object")
+    }
+    if (any(dim(xt) != 2L)) {
         stop("All factors of xt must have the same number of levels.")
     }
 
-
-    # p <- dim(x)[1]
     q <- length(dim(xt)) - 1L
-    if (q < 1L) {
-        stop("xt has too few dimensions")
+    if (q < 2L) {
+        stop("xt must contain predictions from at least 2 models")
     }
-
-    # x.pred.pos.cases <- x[y,] x.pred.neg.cases <- x[!y,]
 
     xt.df <- data.frame(xt)
     freq <- xt.df[["Freq"]]
-    Freq <- NULL  # Needed to remove notes, should be defined in xt.df ...
-    X <- subset(xt.df, select = -Freq)[, -1]
-    y <- subset(xt.df, select = -Freq)[, 1]
+    predictors <- xt.df[, -c(1L, ncol(xt.df)), drop = FALSE]
+    outcome <- xt.df[[1L]]
 
-    statistic <- 0
-    for(level in levels(y)){
-
-      type.i <- c()
-      type.ii <- c()
-      k <- 1L
-
-      row.idx <- which(y==level)
-
-      m1 <- (X[row.idx, 1L] == level) |> factor(levels=c(T,F))
-      for (i in 2L:q) {
-        m2 <- (X[row.idx, i] == level) |> factor(levels=c(T,F))
-        for (j in 2L:q) {
-          m3 <- (X[row.idx, j] == level) |> factor(levels=c(T,F))
-          sub.xt <- stats::xtabs(freq[row.idx] ~ m1 + m2 + m3)
-
-          type.i[k] <- sub.xt[1L, 2L, 2L] + ifelse(correct, stats::runif(1,1/1e4,5/1e4), 0)# ifelse(correct, 0.0001, 0)
-          type.ii[k] <- sub.xt[2L, 1L, 1L] + ifelse(correct, stats::runif(1,1/1e4,5/1e4), 0)# ifelse(correct, 0.0001, 0)
-
-          k <- k + 1L
-        }
-      }
-      type.i.matrix <- matrix(type.i, nrow = q - 1L)
-      type.ii.matrix <- matrix(type.ii, nrow = q - 1L)
-
-      a <- diag(type.i.matrix) - diag(type.ii.matrix)
-      A <- type.i.matrix + type.ii.matrix
-
-      statistic <- statistic + ( t(a) %*% solve(A) %*% a )
+    if (!is.numeric(freq) || any(!is.finite(freq)) || any(freq < 0)) {
+        stop("xt frequencies must be finite, numeric, and non-negative")
     }
-  statistic |> as.numeric()
+
+    .multiclass_wu_statistic_from_data(
+        x = predictors,
+        y = outcome,
+        weights = freq,
+        correct = correct
+    )
 }
