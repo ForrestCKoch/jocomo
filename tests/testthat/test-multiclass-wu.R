@@ -122,6 +122,30 @@ test_that("multiclass Wu validates tabulated frequencies", {
   )
 })
 
+test_that("multiclass Wu supports three-class xtabs inputs", {
+  data <- data.frame(
+    y = factor(c("a", "a", "a", "b", "b", "b", "c", "c", "c")),
+    x1 = factor(c("a", "b", "c", "b", "c", "a", "c", "a", "b")),
+    x2 = factor(c("a", "c", "b", "c", "a", "b", "b", "c", "a")),
+    x3 = factor(c("b", "a", "c", "a", "c", "b", "c", "b", "a"))
+  )
+  table <- xtabs(~ y + x1 + x2 + x3, data = data)
+
+  raw <- multiclass.wu.statistic(
+    as.matrix(data[c("x1", "x2", "x3")]),
+    data$y,
+    correct = TRUE
+  )
+  tabulated <- multiclass.wu.statistic(table, correct = TRUE)
+
+  expect_true(is.finite(raw))
+  expect_equal(tabulated, raw)
+  expect_equal(
+    unname(multiclass.wu.test(table, correct = TRUE)$parameter),
+    3L * 2L
+  )
+})
+
 ####################
 # No Formula
 ####################

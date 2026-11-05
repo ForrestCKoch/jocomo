@@ -252,8 +252,8 @@ multiclass.wu.test.xtabs <- function(xt, ...) {
         stop("xt must be an xtabs or table object")
     }
 
-    if (any(dim(xt) != 2L)) {
-        stop("All factors of xt must have exactly 2 levels.")
+    if (length(unique(dim(xt))) != 1L) {
+        stop("All factors of xt must have the same number of levels.")
     }
 
     k <- length(dim(xt)) - 1L
@@ -316,7 +316,7 @@ multiclass.wu.statistic.xtabs <- function(xt, correct = FALSE, ...) {
     if (!is.table(xt)) {
         stop("'xt' must be a table or xtabs object")
     }
-    if (any(dim(xt) != 2L)) {
+    if (length(unique(dim(xt))) != 1L) {
         stop("All factors of xt must have the same number of levels.")
     }
 
