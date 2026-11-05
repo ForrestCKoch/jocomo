@@ -4,7 +4,7 @@
 \alias{multiclass.wu.statistic.default}
 \title{Title}
 \usage{
-\method{multiclass.wu.statistic}{default}(x, y, correct = F, ...)
+\method{multiclass.wu.statistic}{default}(x, y, correct = FALSE, ...)
 }
 \arguments{
 \item{x}{An object which can be coerced to a `matrix` of size \eqn{p*q} where

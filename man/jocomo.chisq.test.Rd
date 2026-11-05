@@ -15,14 +15,14 @@ jocomo.chisq.test(...)
   samples,
   models,
   groups,
-  correct = F,
-  warn = getOption("warn"),
+  correct = FALSE,
+  warn = FALSE,
   ...
 )
 
 \method{jocomo.chisq.test}{formula}(formula, data = parent.frame(), ...)
 
-\method{jocomo.chisq.test}{xtabs}(xt, data = parent.frame(), correct = FALSE, ...)
+\method{jocomo.chisq.test}{xtabs}(xt, correct = FALSE, ...)
 }
 \arguments{
 \item{...}{TODO}

@@ -15,8 +15,8 @@ multiclass.wu.test(...)
   y,
   models,
   samples,
-  correct = F,
-  warn = getOption("warn"),
+  correct = FALSE,
+  warn = FALSE,
   ...
 )
 

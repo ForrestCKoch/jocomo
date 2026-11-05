@@ -27,9 +27,8 @@ multiclass.wu.test <- function(...) UseMethod("multiclass.wu.test")
 #' corresponds to. This should have \eqn{p} levels each occurring exactly \eqn{q}
 #' times. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.
 #' @param correct A boolean value indicating whether adjustments should be made
-#' acount for empty cells in the contingency tables (required if any cells would be 0)
-#' @param warn A boolean value indicating whether to issue warnings when data appears
-#' incorretly structured.
+#' to account for empty cells in the contingency tables.
+#' @param warn A boolean value reserved for compatibility with grouped callers.
 #' @rdname multiclass.wu.test
 #' @method multiclass.wu.test default
 #' @exportS3Method jocomo::multiclass.wu.test default

@@ -4,7 +4,7 @@
 \alias{multiclass.wu.statistic.xtabs}
 \title{Title}
 \usage{
-\method{multiclass.wu.statistic}{xtabs}(xt, correct = F, ...)
+\method{multiclass.wu.statistic}{xtabs}(xt, correct = FALSE, ...)
 }
 \arguments{
 \item{xt}{An `xtabs` object of 3 or more dimensions indicating the

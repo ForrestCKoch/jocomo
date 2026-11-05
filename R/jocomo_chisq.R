@@ -73,11 +73,11 @@ jocomo.chisq.test <- function(...) UseMethod("jocomo.chisq.test")
 #' @param group A `vector` of length \eqn{p*q} indicating which strata the datum
 #' corresponds to. Ignored if `x` is a `matrix` or `data.frame` or a formula is specified.
 #' @param correct A boolean value indicating whether adjustments should be made
-#' acount for empty cells in the contingency tables (required if any cells would be 0)
-#' @param warn A boolean value indicating whether to issue warnings when data appears
-#' incorretly structured.
+#' to account for empty cells in the contingency tables.
+#' @param warn A boolean value reserved for compatibility with the grouped
+#' test interface.
 #'
-#' @return TODO
+#' @return An object of class `htest`.
 #' @rdname jocomo.chisq.test
 #' @examples
 #' 'TODO'
@@ -188,9 +188,9 @@ jocomo.chisq.test.default <- function(x, y, samples, models, groups,
 
 #' Title
 #'
-#' @param formula TODO
-#' @param data TODO
-#' @return TODO
+#' @param formula A formula describing the grouped prediction data.
+#' @param data An optional data frame containing variables in `formula`.
+#' @return An object of class `htest`.
 #' @rdname jocomo.chisq.test
 #' @examples
 #' 'TODO'
@@ -365,8 +365,8 @@ jocomo.chisq.test.formula <- function(formula, data=parent.frame(), ...) {
 #' the same number of levels. The first dimension should refer to the true labels
 #' while the remaining dimensions refer to the model predictions.
 #' @param correct A boolean value indicating whether adjustments should be made
-#' acount for empty cells in the contingency tables (required if any cells would be 0)
-#' @return TODO
+#' to account for empty cells in the contingency tables.
+#' @return An object of class `htest`.
 #' @rdname jocomo.chisq.test
 #' @examples
 #' 'TODO'
