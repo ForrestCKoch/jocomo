@@ -96,7 +96,7 @@ test_that('test jocomo.chisq.test.formula (wide) on baron pancreas.predictions',
 
   jocomo.out <- jocomo.chisq.test.formula(label~ACTINN + moana + scID + scmap + singlecellNet + singleR|sample|test, data=.tmp, correct=T, warn=F)
 
-  statistic <- 17951.5
+  statistic <- 2989.5
   names(statistic) <- "chi-squared"
   pvalue <- 0
   df <- 190
@@ -120,7 +120,7 @@ test_that('test jocomo.chisq.test.formula (wide, dot notation) on baron pancreas
 
   jocomo.out <- jocomo.chisq.test.formula(label~.|sample|test, data=.tmp, correct=T, warn=F)
 
-  statistic <- 17951.5
+  statistic <- 2989.5
   names(statistic) <- "chi-squared"
   pvalue <- 0
   df <- 190
@@ -133,6 +133,33 @@ test_that('test jocomo.chisq.test.formula (wide, dot notation) on baron pancreas
   expect_equal(jocomo.out$parameter, df)
   expect_equal(jocomo.out$p.value, pvalue)
   expect_equal(jocomo.out$method, "Chi-squared Test for the Joint Comparison of Multiple Models")
+})
+
+test_that("wide and long grouped inputs produce the same statistic", {
+  .tmp <- pancreas.predictions |> subset(train == "baron")
+  long <- with(
+    .tmp,
+    jocomo.chisq.test(pred, label, sample, method, test,
+                      correct = TRUE, warn = FALSE)
+  )
+
+  wide.data <- .tmp |>
+    (\(data) data[, c("label", "pred", "method", "sample", "test")])() |>
+    reshape(
+      direction = "wide",
+      idvar = c("label", "sample", "test"),
+      timevar = "method"
+    )
+  names(wide.data) <- sub("pred.", "", names(wide.data), fixed = TRUE)
+  wide <- jocomo.chisq.test(
+    label ~ . | sample | test,
+    data = wide.data,
+    correct = TRUE,
+    warn = FALSE
+  )
+
+  expect_equal(wide$statistic, long$statistic, tolerance = 1e-10)
+  expect_equal(wide$parameter, long$parameter)
 })
 
 test_that("grouped chi-squared validation rejects malformed structures", {

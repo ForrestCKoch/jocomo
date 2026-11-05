@@ -111,7 +111,7 @@ jocomo.chisq.test.default <- function(x, y, samples, models, groups,
             models = c(col(x)),
             groups = rep(groups, ncol(x))
         )
-        groups <- validation$groups
+        groups <- factor(groups)
         s <- seq_len(nrow(x))
         wu.stats <- stats::aggregate(result ~ groups,
                                      data = data.frame(result = s, groups),
