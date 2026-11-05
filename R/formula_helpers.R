@@ -67,6 +67,13 @@
     }
 }
 
+.jocomo_validate_xtabs_models <- function(mf) {
+    n_models <- ncol(mf) - 2L
+    if (n_models < 2L) {
+        stop("Cross-tabulated formulas must contain at least 2 model predictions")
+    }
+}
+
 .jocomo_long_formula <- function(formula) {
     rhs <- formula[[3L]]
     prediction <- rhs[[2L]][[2L]]

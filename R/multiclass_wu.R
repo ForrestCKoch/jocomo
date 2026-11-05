@@ -227,6 +227,7 @@ multiclass.wu.test.formula <- function(formula, data = parent.frame(), ...) {
     normalized_formula <- .jocomo_xtabs_formula(formula)
     mf <- .jocomo_model_frame(normalized_formula, data = data)
     .jocomo_validate_frequency(mf)
+    .jocomo_validate_xtabs_models(mf)
     xt <- stats::xtabs(formula = normalized_formula, data = data)
 
     nmf <- names(mf)
