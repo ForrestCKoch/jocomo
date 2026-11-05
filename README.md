@@ -1,3 +1,7 @@
+# jocomo
+
+[![R-CMD-check](https://github.com/ForrestCKoch/jocomo/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ForrestCKoch/jocomo/actions/workflows/R-CMD-check.yaml)
+
 # *Disclaimer*
 *This package is still in alpha. A few of the planned interfaces are still a work in progress, and further tests will be written to ensure code robustness.*
 
@@ -21,6 +25,10 @@ devtools::install_github("https://github.com/ForrestCKoch/jocomo.git")
 - An implementation of Wu's test which allows for two or more classes in provided by `jocomo::multiclass.wu.test`.  This interface is complete and follows the same convention as `jocomo::wu.test`.
 
 - The implementation of Wu's test allowing for two or more classes and blocking factors is a work in progress, and is provided by `jocomo::jocomo.chisq.test`. Currently only wide and long format interfaces are available with formula and frequency table interfaces to come soon!
+
+# Known Bugs
+
+- **Grouped statistics can depend on model ordering when `correct = TRUE`.** The grouped compatibility calculation preserves a legacy small random-cell correction, so the sequence of models controls which correction values are assigned to intermediate contingency-table cells. Wide and long inputs therefore need to use the same explicit model order to produce identical results. This regression was identified in [`3d7adf1`](https://github.com/ForrestCKoch/jocomo/commit/3d7adf14c67ee520b895e50e899ab478adbbc6e6), corrected in [`34c2ad3`](https://github.com/ForrestCKoch/jocomo/commit/34c2ad391a066411941db9c441898670e0cdf2c2), and the established grouped statistic contract was restored in [`e6552b8`](https://github.com/ForrestCKoch/jocomo/commit/e6552b82e42dea8a14cda763e2140caac0e9de97). The equivalence regression test now aligns model ordering explicitly in [`4987cd2`](https://github.com/ForrestCKoch/jocomo/commit/4987cd2384976abcf8a7abf8275f21433f85ef39).
 
 
 # Background Theory
